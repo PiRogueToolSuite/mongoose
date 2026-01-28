@@ -7,4 +7,8 @@
    :hidden:
    :caption: API reference
 
-   source/mongoose
+   source/mongoose.collect
+   source/mongoose.store
+   source/mongoose.forward
+   source/mongoose.core
+   source/mongoose.models

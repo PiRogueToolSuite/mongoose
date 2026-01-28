@@ -11,7 +11,7 @@ sys.path.append(str(Path("_ext").resolve()))
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-project = "Mongoose - Helpers to collect, enrich and store Suricata events and network flows."
+project = "Mongoose"
 copyright = "2026, Defensive Lab Agency - Esther Onfroy"
 author = "Esther Onfroy"
 
@@ -36,6 +36,7 @@ extensions = [
     "sphinx.ext.napoleon",
     "sphinx.ext.githubpages",
     "sphinxcontrib.datatemplates",
+    "sphinx_sqlalchemy",
 ]
 
 templates_path = ["_templates"]
@@ -74,8 +75,8 @@ exclude_patterns = []
 autosummary_generate = True
 
 intersphinx_mapping = {
-    "pymisp": ("https://pymisp.readthedocs.io/en/latest", None),
-    "adb-shell": ("https://adb-shell.readthedocs.io/en/stable", None),
-    "jinja2": ("https://jinja.palletsprojects.com/en/stable", None),
+    "requests": ("https://requests.readthedocs.io/en/latest", None),
+    "sqlalchemy": ("https://sqlalchemy.readthedocs.io/en/latest", None),
+    "pydantic": ("https://docs.pydantic.dev/latest", None),
     "python": ("https://docs.python.org/3", None),
 }
