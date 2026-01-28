@@ -15,8 +15,6 @@ Helpers to collect, enrich and store Suricata events and network flows.
 </p>
 </div>
 
-> ⚠️ *This project is currently under active development and is not suitable for production use. Breaking changes may occur without notice. A stable release will be published to PyPI once development stabilizes.*
-
 ### Overview
 
 **Mongoose** is a versatile Python-based framework designed for the collection, enrichment, and distribution of network security events and traffic flows. It acts as a central hub for processing data from various network monitoring tools, providing a modular and scalable pipeline for security analysts and researchers.
