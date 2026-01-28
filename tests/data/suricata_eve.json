@@ -1,0 +1,742 @@
+{
+  "timestamp": "2026-01-27T19:39:39.259056+0100",
+  "flow_id": 1330203016655185,
+  "in_iface": "enp5s0",
+  "event_type": "netflow",
+  "vlan": [
+    2
+  ],
+  "src_ip": "192.168.2.1",
+  "src_port": 37765,
+  "dest_ip": "255.255.255.255",
+  "dest_port": 10001,
+  "proto": "UDP",
+  "app_proto": "failed",
+  "netflow": {
+    "pkts": 1,
+    "bytes": 56,
+    "start": "2026-01-27T19:39:05.029009+0100",
+    "end": "2026-01-27T19:39:05.029009+0100",
+    "age": 0,
+    "min_ttl": 64,
+    "max_ttl": 64
+  },
+  "community_id": "1:JApOjbSxG4/QlOmUw6nb5nrWm0c="
+}
+{
+  "timestamp": "2026-01-27T19:39:39.259095+0100",
+  "flow_id": 1051032288907429,
+  "in_iface": "enp5s0",
+  "event_type": "netflow",
+  "src_ip": "fe80:0000:0000:0000:96dd:f8ff:fe2b:3b4a",
+  "dest_ip": "ff02:0000:0000:0000:0000:0000:0001:0003",
+  "proto": "IPv6-ICMP",
+  "icmp_type": 131,
+  "icmp_code": 0,
+  "netflow": {
+    "pkts": 1,
+    "bytes": 86,
+    "start": "2026-01-27T19:38:50.741541+0100",
+    "end": "2026-01-27T19:38:50.741541+0100",
+    "age": 0,
+    "min_ttl": 1,
+    "max_ttl": 1
+  },
+  "community_id": "1:H+7W/BjTA5biqj7RVIFE7L5Dxks="
+}
+{
+  "timestamp": "2026-01-27T19:39:39.259123+0100",
+  "flow_id": 207885112228094,
+  "in_iface": "enp5s0",
+  "event_type": "netflow",
+  "src_ip": "fe80:0000:0000:0000:00dd:8c24:99dc:384a",
+  "dest_ip": "ff02:0000:0000:0000:0000:0001:ffdc:384a",
+  "proto": "IPv6-ICMP",
+  "icmp_type": 131,
+  "icmp_code": 0,
+  "netflow": {
+    "pkts": 1,
+    "bytes": 86,
+    "start": "2026-01-27T19:39:00.702718+0100",
+    "end": "2026-01-27T19:39:00.702718+0100",
+    "age": 0,
+    "min_ttl": 1,
+    "max_ttl": 1
+  },
+  "community_id": "1:wX8WP9oANSzroynbtZdAO1zb8kg="
+}
+{
+  "timestamp": "2026-01-27T19:39:39.259149+0100",
+  "flow_id": 1193154901250993,
+  "in_iface": "enp5s0",
+  "event_type": "netflow",
+  "src_ip": "fe80:0000:0000:0000:3230:f9ff:fee7:0404",
+  "dest_ip": "ff02:0000:0000:0000:0000:0001:fffa:85bf",
+  "proto": "IPv6-ICMP",
+  "icmp_type": 135,
+  "icmp_code": 0,
+  "netflow": {
+    "pkts": 1,
+    "bytes": 86,
+    "start": "2026-01-27T19:38:05.922545+0100",
+    "end": "2026-01-27T19:38:05.922545+0100",
+    "age": 0,
+    "min_ttl": 255,
+    "max_ttl": 255
+  },
+  "community_id": "1:oBdIQAQukcLBNbQWAyei1kp0KHg="
+}
+{
+  "timestamp": "2026-01-27T19:39:39.259176+0100",
+  "flow_id": 69065323064150,
+  "in_iface": "enp5s0",
+  "event_type": "netflow",
+  "src_ip": "fe80:0000:0000:0000:3230:f9ff:fee7:0404",
+  "src_port": 5353,
+  "dest_ip": "ff02:0000:0000:0000:0000:0000:0000:00fb",
+  "dest_port": 5353,
+  "proto": "UDP",
+  "app_proto": "failed",
+  "netflow": {
+    "pkts": 5,
+    "bytes": 1604,
+    "start": "2026-01-27T19:38:04.011094+0100",
+    "end": "2026-01-27T19:38:05.525560+0100",
+    "age": 1,
+    "min_ttl": 255,
+    "max_ttl": 255
+  },
+  "community_id": "1:Oi34tvDnGECMpJhSh/8mL8ScheI="
+}
+{
+  "timestamp": "2026-01-27T19:39:39.259203+0100",
+  "flow_id": 634502062710672,
+  "in_iface": "enp5s0",
+  "event_type": "netflow",
+  "src_ip": "fe80:0000:0000:0000:3230:f9ff:fee7:0404",
+  "dest_ip": "ff02:0000:0000:0000:0000:0001:ffaf:30c0",
+  "proto": "IPv6-ICMP",
+  "icmp_type": 135,
+  "icmp_code": 0,
+  "netflow": {
+    "pkts": 1,
+    "bytes": 86,
+    "start": "2026-01-27T19:38:06.302992+0100",
+    "end": "2026-01-27T19:38:06.302992+0100",
+    "age": 0,
+    "min_ttl": 255,
+    "max_ttl": 255
+  },
+  "community_id": "1:NiwEhUXAHPrC4PGPVioC6GfXX6E="
+}
+{
+  "timestamp": "2026-01-27T19:39:39.259229+0100",
+  "flow_id": 1624088298315526,
+  "in_iface": "enp5s0",
+  "event_type": "netflow",
+  "src_ip": "192.168.0.223",
+  "src_port": 137,
+  "dest_ip": "192.168.0.255",
+  "dest_port": 137,
+  "proto": "UDP",
+  "app_proto": "failed",
+  "netflow": {
+    "pkts": 3,
+    "bytes": 276,
+    "start": "2026-01-27T19:38:18.974598+0100",
+    "end": "2026-01-27T19:38:20.130964+0100",
+    "age": 2,
+    "min_ttl": 64,
+    "max_ttl": 64
+  },
+  "community_id": "1:+rsQ2EsYfL42eppVn4zlxWAxPzU="
+}
+{
+  "timestamp": "2026-01-27T19:39:39.259252+0100",
+  "flow_id": 921461706384723,
+  "in_iface": "enp5s0",
+  "event_type": "netflow",
+  "src_ip": "192.168.0.96",
+  "src_port": 5353,
+  "dest_ip": "224.0.0.251",
+  "dest_port": 5353,
+  "proto": "UDP",
+  "app_proto": "failed",
+  "netflow": {
+    "pkts": 4,
+    "bytes": 380,
+    "start": "2026-01-27T19:36:30.058707+0100",
+    "end": "2026-01-27T19:36:30.311583+0100",
+    "age": 0,
+    "min_ttl": 255,
+    "max_ttl": 255
+  },
+  "community_id": "1:0MNswQX/3uqCl+woB+Mm0iud1n8="
+}
+{
+  "timestamp": "2026-01-27T19:39:39.259276+0100",
+  "flow_id": 1204652532205623,
+  "in_iface": "enp5s0",
+  "event_type": "netflow",
+  "src_ip": "fe80:0000:0000:0000:188c:6411:97fa:85bf",
+  "dest_ip": "ff02:0000:0000:0000:0000:0002:ff98:dbc7",
+  "proto": "IPv6-ICMP",
+  "icmp_type": 131,
+  "icmp_code": 0,
+  "netflow": {
+    "pkts": 1,
+    "bytes": 86,
+    "start": "2026-01-27T19:38:58.231479+0100",
+    "end": "2026-01-27T19:38:58.231479+0100",
+    "age": 0,
+    "min_ttl": 1,
+    "max_ttl": 1
+  },
+  "community_id": "1:Nn9a5KZ+4T/FR9PJIeELO1UE0MI="
+}
+{
+  "timestamp": "2026-01-27T19:39:39.259314+0100",
+  "flow_id": 1768996202170321,
+  "in_iface": "enp5s0",
+  "event_type": "netflow",
+  "src_ip": "fe80:0000:0000:0000:b62e:99ff:feec:71bf",
+  "dest_ip": "ff02:0000:0000:0000:0000:0000:0000:0016",
+  "proto": "IPv6-ICMP",
+  "icmp_type": 143,
+  "icmp_code": 0,
+  "netflow": {
+    "pkts": 5,
+    "bytes": 570,
+    "start": "2026-01-27T19:38:53.411601+0100",
+    "end": "2026-01-27T19:38:58.327991+0100",
+    "age": 5,
+    "min_ttl": 1,
+    "max_ttl": 1
+  },
+  "community_id": "1:fecOC23KEl8dz9Uv4RMNuF07fFg="
+}
+{
+  "timestamp": "2026-01-27T19:39:39.259341+0100",
+  "flow_id": 1629270181337742,
+  "in_iface": "enp5s0",
+  "event_type": "netflow",
+  "src_ip": "192.168.0.91",
+  "src_port": 62962,
+  "dest_ip": "232.152.53.50",
+  "dest_port": 8738,
+  "proto": "UDP",
+  "app_proto": "failed",
+  "netflow": {
+    "pkts": 3,
+    "bytes": 366,
+    "start": "2026-01-27T19:39:34.645774+0100",
+    "end": "2026-01-27T19:39:34.645785+0100",
+    "age": 0,
+    "min_ttl": 1,
+    "max_ttl": 1
+  },
+  "community_id": "1:2zUaNudgYhNA+rRq9Yts5TTGfiM="
+}
+{
+  "timestamp": "2026-01-27T19:39:39.259365+0100",
+  "flow_id": 1348594065625092,
+  "in_iface": "enp5s0",
+  "event_type": "netflow",
+  "src_ip": "fe80:0000:0000:0000:1e0b:8bff:fef0:5053",
+  "dest_ip": "ff02:0000:0000:0000:0000:0000:0000:0001",
+  "proto": "IPv6-ICMP",
+  "icmp_type": 130,
+  "icmp_code": 0,
+  "netflow": {
+    "pkts": 1,
+    "bytes": 86,
+    "start": "2026-01-27T19:38:50.151556+0100",
+    "end": "2026-01-27T19:38:50.151556+0100",
+    "age": 0,
+    "min_ttl": 1,
+    "max_ttl": 1
+  },
+  "community_id": "1:EvnoJJ8TNu1sJ0b5sJ99KWeJU+4="
+}
+{
+  "timestamp": "2026-01-27T19:39:39.259391+0100",
+  "flow_id": 1490714522490826,
+  "in_iface": "enp5s0",
+  "event_type": "netflow",
+  "src_ip": "192.168.0.19",
+  "src_port": 5353,
+  "dest_ip": "224.0.0.251",
+  "dest_port": 5353,
+  "proto": "UDP",
+  "app_proto": "failed",
+  "netflow": {
+    "pkts": 182,
+    "bytes": 47770,
+    "start": "2026-01-27T19:36:03.726986+0100",
+    "end": "2026-01-27T19:39:37.217167+0100",
+    "age": 214,
+    "min_ttl": 255,
+    "max_ttl": 255
+  },
+  "community_id": "1:dut+mKHk2idXOP1XXzsg58wKoIc="
+}
+{
+  "timestamp": "2026-01-27T19:39:39.259415+0100",
+  "flow_id": 650913132285284,
+  "in_iface": "enp5s0",
+  "event_type": "netflow",
+  "src_ip": "192.168.0.1",
+  "src_port": 34162,
+  "dest_ip": "239.255.255.250",
+  "dest_port": 3702,
+  "proto": "UDP",
+  "app_proto": "failed",
+  "netflow": {
+    "pkts": 1,
+    "bytes": 811,
+    "start": "2026-01-27T19:37:59.560484+0100",
+    "end": "2026-01-27T19:37:59.560484+0100",
+    "age": 0,
+    "min_ttl": 1,
+    "max_ttl": 1
+  },
+  "community_id": "1:JJzJ0ZROe0+AZy9a7Vil9eBAEog="
+}
+{
+  "timestamp": "2026-01-27T19:39:39.259438+0100",
+  "flow_id": 1073497116136238,
+  "in_iface": "enp5s0",
+  "event_type": "netflow",
+  "src_ip": "fe80:0000:0000:0000:188c:6411:97fa:85bf",
+  "dest_ip": "ff02:0000:0000:0000:0000:0001:ff54:c041",
+  "proto": "IPv6-ICMP",
+  "icmp_type": 131,
+  "icmp_code": 0,
+  "netflow": {
+    "pkts": 1,
+    "bytes": 86,
+    "start": "2026-01-27T19:39:02.611118+0100",
+    "end": "2026-01-27T19:39:02.611118+0100",
+    "age": 0,
+    "min_ttl": 1,
+    "max_ttl": 1
+  },
+  "community_id": "1:JJUSAZVYRp2ydv6QtXfC1VfOYCs="
+}
+{
+  "timestamp": "2026-01-27T19:39:39.259464+0100",
+  "flow_id": 933242811355221,
+  "in_iface": "enp5s0",
+  "event_type": "netflow",
+  "src_ip": "fe80:0000:0000:0000:96dd:f8ff:fe2b:3b4a",
+  "dest_ip": "ff02:0000:0000:0000:0000:0001:ff2b:3b4a",
+  "proto": "IPv6-ICMP",
+  "icmp_type": 131,
+  "icmp_code": 0,
+  "netflow": {
+    "pkts": 1,
+    "bytes": 86,
+    "start": "2026-01-27T19:38:58.561237+0100",
+    "end": "2026-01-27T19:38:58.561237+0100",
+    "age": 0,
+    "min_ttl": 1,
+    "max_ttl": 1
+  },
+  "community_id": "1:JpTl7LSzMSLEwpOzJLkSQACD7CE="
+}
+{
+  "timestamp": "2026-01-27T19:39:39.259490+0100",
+  "flow_id": 1215563848317046,
+  "in_iface": "enp5s0",
+  "event_type": "netflow",
+  "src_ip": "fe80:0000:0000:0000:1e0b:8bff:fe14:e355",
+  "dest_ip": "ff02:0000:0000:0000:0000:0001:fffa:85bf",
+  "proto": "IPv6-ICMP",
+  "icmp_type": 135,
+  "icmp_code": 0,
+  "netflow": {
+    "pkts": 52,
+    "bytes": 4472,
+    "start": "2026-01-27T19:26:41.424054+0100",
+    "end": "2026-01-27T19:39:27.501545+0100",
+    "age": 766,
+    "min_ttl": 255,
+    "max_ttl": 255
+  },
+  "community_id": "1:uctiRFgYrM/dJyrjC24/9vbnr5s="
+}
+{
+  "timestamp": "2026-01-27T19:39:39.259517+0100",
+  "flow_id": 373260682178002,
+  "in_iface": "enp5s0",
+  "event_type": "netflow",
+  "src_ip": "192.168.0.52",
+  "src_port": 5353,
+  "dest_ip": "224.0.0.251",
+  "dest_port": 5353,
+  "proto": "UDP",
+  "app_proto": "failed",
+  "netflow": {
+    "pkts": 2,
+    "bytes": 417,
+    "start": "2026-01-27T19:39:26.372178+0100",
+    "end": "2026-01-27T19:39:26.743918+0100",
+    "age": 0,
+    "min_ttl": 255,
+    "max_ttl": 255
+  },
+  "community_id": "1:uDljmktH0HutCo+iXQ/EaDeUdXI="
+}
+{
+  "timestamp": "2026-01-27T19:39:39.259540+0100",
+  "flow_id": 2204570305402914,
+  "in_iface": "enp5s0",
+  "event_type": "netflow",
+  "src_ip": "192.168.0.185",
+  "src_port": 5353,
+  "dest_ip": "224.0.0.251",
+  "dest_port": 5353,
+  "proto": "UDP",
+  "app_proto": "failed",
+  "netflow": {
+    "pkts": 21,
+    "bytes": 10486,
+    "start": "2026-01-27T19:37:35.628770+0100",
+    "end": "2026-01-27T19:38:05.616485+0100",
+    "age": 30,
+    "min_ttl": 255,
+    "max_ttl": 255
+  },
+  "community_id": "1:5EFDZqEP9uPfU5qjPlMvCH6V+JM="
+}
+{
+  "timestamp": "2026-01-27T19:39:39.259601+0100",
+  "flow_id": 1784009253135154,
+  "in_iface": "enp5s0",
+  "event_type": "netflow",
+  "src_ip": "fe80:0000:0000:0000:0c40:d7cd:697e:e3f1",
+  "src_port": 5353,
+  "dest_ip": "ff02:0000:0000:0000:0000:0000:0000:00fb",
+  "dest_port": 5353,
+  "proto": "UDP",
+  "app_proto": "failed",
+  "netflow": {
+    "pkts": 23,
+    "bytes": 14895,
+    "start": "2026-01-27T19:37:03.729906+0100",
+    "end": "2026-01-27T19:37:47.211627+0100",
+    "age": 44,
+    "min_ttl": 255,
+    "max_ttl": 255
+  },
+  "community_id": "1:m/RX4PWxsKXl9gH80i6fa6lhJ6o="
+}
+{
+  "timestamp": "2026-01-27T19:39:39.259631+0100",
+  "flow_id": 1368816871026506,
+  "in_iface": "enp5s0",
+  "event_type": "netflow",
+  "vlan": [
+    2
+  ],
+  "src_ip": "192.168.2.1",
+  "src_port": 5353,
+  "dest_ip": "224.0.0.251",
+  "dest_port": 5353,
+  "proto": "UDP",
+  "app_proto": "failed",
+  "netflow": {
+    "pkts": 1270,
+    "bytes": 291642,
+    "start": "2026-01-27T19:26:36.143178+0100",
+    "end": "2026-01-27T19:39:38.490586+0100",
+    "age": 782,
+    "min_ttl": 255,
+    "max_ttl": 255
+  },
+  "community_id": "1:fiBXaPxEUEBAzCTEfdcYE4oTPH0="
+}
+{
+  "timestamp": "2026-01-27T19:39:39.259655+0100",
+  "flow_id": 248191184019983,
+  "in_iface": "enp5s0",
+  "event_type": "netflow",
+  "src_ip": "192.168.0.12",
+  "src_port": 5353,
+  "dest_ip": "224.0.0.251",
+  "dest_port": 5353,
+  "proto": "UDP",
+  "app_proto": "failed",
+  "netflow": {
+    "pkts": 140,
+    "bytes": 15026,
+    "start": "2026-01-27T19:26:36.139791+0100",
+    "end": "2026-01-27T19:39:38.489893+0100",
+    "age": 782,
+    "min_ttl": 255,
+    "max_ttl": 255
+  },
+  "community_id": "1:0+omuBBFtiAJoA0Z0Nv2+j+/ZcM="
+}
+{
+  "timestamp": "2026-01-27T19:39:39.259678+0100",
+  "flow_id": 390887227961586,
+  "in_iface": "enp5s0",
+  "event_type": "netflow",
+  "src_ip": "fe80:0000:0000:0000:0483:0fe2:14be:ec4b",
+  "src_port": 5353,
+  "dest_ip": "ff02:0000:0000:0000:0000:0000:0000:00fb",
+  "dest_port": 5353,
+  "proto": "UDP",
+  "app_proto": "failed",
+  "netflow": {
+    "pkts": 2,
+    "bytes": 457,
+    "start": "2026-01-27T19:39:26.372978+0100",
+    "end": "2026-01-27T19:39:26.746654+0100",
+    "age": 0,
+    "min_ttl": 255,
+    "max_ttl": 255
+  },
+  "community_id": "1:nPV+gDfU7fuAEfpZ09SaTwKd/tk="
+}
+{
+  "timestamp": "2026-01-27T19:39:39.259705+0100",
+  "flow_id": 674481769312057,
+  "in_iface": "enp5s0",
+  "event_type": "netflow",
+  "src_ip": "192.168.0.1",
+  "src_port": 45906,
+  "dest_ip": "233.89.188.1",
+  "dest_port": 10001,
+  "proto": "UDP",
+  "app_proto": "failed",
+  "netflow": {
+    "pkts": 1,
+    "bytes": 60,
+    "start": "2026-01-27T19:39:00.028473+0100",
+    "end": "2026-01-27T19:39:00.028473+0100",
+    "age": 0,
+    "min_ttl": 1,
+    "max_ttl": 1
+  },
+  "community_id": "1:ck9NczXY3C60ro667pQMiGvKO6E="
+}
+{
+  "timestamp": "2026-01-27T19:39:39.259729+0100",
+  "flow_id": 679822558415707,
+  "in_iface": "enp5s0",
+  "event_type": "netflow",
+  "src_ip": "192.168.0.52",
+  "src_port": 137,
+  "dest_ip": "192.168.0.255",
+  "dest_port": 137,
+  "proto": "UDP",
+  "app_proto": "failed",
+  "netflow": {
+    "pkts": 3,
+    "bytes": 276,
+    "start": "2026-01-27T19:38:18.969563+0100",
+    "end": "2026-01-27T19:38:20.126373+0100",
+    "age": 2,
+    "min_ttl": 64,
+    "max_ttl": 64
+  },
+  "community_id": "1:ZkKbFqUosfJxmOSdo2WUByeBFhc="
+}
+{
+  "timestamp": "2026-01-27T19:39:39.259752+0100",
+  "flow_id": 962583882280412,
+  "in_iface": "enp5s0",
+  "event_type": "netflow",
+  "src_ip": "fe80:0000:0000:0000:00dd:8c24:99dc:384a",
+  "src_port": 5353,
+  "dest_ip": "ff02:0000:0000:0000:0000:0000:0000:00fb",
+  "dest_port": 5353,
+  "proto": "UDP",
+  "app_proto": "failed",
+  "netflow": {
+    "pkts": 2,
+    "bytes": 457,
+    "start": "2026-01-27T19:39:26.372188+0100",
+    "end": "2026-01-27T19:39:26.743940+0100",
+    "age": 0,
+    "min_ttl": 255,
+    "max_ttl": 255
+  },
+  "community_id": "1:4lbw+yQoEqzz9TiSZTos6D+56Fc="
+}
+{
+  "timestamp": "2026-01-27T19:39:39.259779+0100",
+  "flow_id": 1387070482727772,
+  "in_iface": "enp5s0",
+  "event_type": "netflow",
+  "src_ip": "192.168.0.1",
+  "src_port": 54383,
+  "dest_ip": "255.255.255.255",
+  "dest_port": 10001,
+  "proto": "UDP",
+  "app_proto": "failed",
+  "netflow": {
+    "pkts": 74,
+    "bytes": 4440,
+    "start": "2026-01-27T19:26:46.181084+0100",
+    "end": "2026-01-27T19:39:32.711121+0100",
+    "age": 766,
+    "min_ttl": 64,
+    "max_ttl": 64
+  },
+  "community_id": "1:kRqPfmm7SrFbLAUUX6Vg3tulPCA="
+}
+{
+  "timestamp": "2026-01-27T19:39:39.259803+0100",
+  "flow_id": 826358207267683,
+  "in_iface": "enp5s0",
+  "event_type": "netflow",
+  "vlan": [
+    2
+  ],
+  "src_ip": "192.168.2.1",
+  "src_port": 43276,
+  "dest_ip": "255.255.255.255",
+  "dest_port": 10001,
+  "proto": "UDP",
+  "app_proto": "failed",
+  "netflow": {
+    "pkts": 74,
+    "bytes": 4144,
+    "start": "2026-01-27T19:26:46.181091+0100",
+    "end": "2026-01-27T19:39:32.711126+0100",
+    "age": 766,
+    "min_ttl": 64,
+    "max_ttl": 64
+  },
+  "community_id": "1:fcBoFrCMiGxQfnBZNbO0e8cI/bE="
+}
+{
+  "timestamp": "2026-01-27T19:39:39.259838+0100",
+  "flow_id": 2104117469174474,
+  "in_iface": "enp5s0",
+  "event_type": "netflow",
+  "src_ip": "fe80:0000:0000:0000:1e0b:8bff:fef0:5053",
+  "dest_ip": "ff02:0000:0000:0000:0000:0000:0000:006a",
+  "proto": "IPv6-ICMP",
+  "icmp_type": 131,
+  "icmp_code": 0,
+  "netflow": {
+    "pkts": 1,
+    "bytes": 86,
+    "start": "2026-01-27T19:39:12.711370+0100",
+    "end": "2026-01-27T19:39:12.711370+0100",
+    "age": 0,
+    "min_ttl": 1,
+    "max_ttl": 1
+  },
+  "community_id": "1:yIgB4FgGD2XZ7mcHuSVXySdtuw0="
+}
+{
+  "timestamp": "2026-01-27T19:39:39.259866+0100",
+  "flow_id": 276913826870109,
+  "in_iface": "enp5s0",
+  "event_type": "netflow",
+  "src_ip": "fe80:0000:0000:0000:188c:6411:97fa:85bf",
+  "dest_ip": "ff02:0000:0000:0000:0000:0001:ff5f:f33e",
+  "proto": "IPv6-ICMP",
+  "icmp_type": 131,
+  "icmp_code": 0,
+  "netflow": {
+    "pkts": 1,
+    "bytes": 86,
+    "start": "2026-01-27T19:39:04.111453+0100",
+    "end": "2026-01-27T19:39:04.111453+0100",
+    "age": 0,
+    "min_ttl": 1,
+    "max_ttl": 1
+  },
+  "community_id": "1:IYezW9aSN883aQtBvOJSYKnZBJ4="
+}
+{
+  "timestamp": "2026-01-27T19:39:39.259893+0100",
+  "flow_id": 1122985828586061,
+  "in_iface": "enp5s0",
+  "event_type": "netflow",
+  "src_ip": "fe80:0000:0000:0000:1e0b:8bff:fe14:e355",
+  "dest_ip": "ff02:0000:0000:0000:0000:0001:ff2b:9a89",
+  "proto": "IPv6-ICMP",
+  "icmp_type": 135,
+  "icmp_code": 0,
+  "netflow": {
+    "pkts": 52,
+    "bytes": 4472,
+    "start": "2026-01-27T19:26:46.430669+0100",
+    "end": "2026-01-27T19:39:37.515847+0100",
+    "age": 771,
+    "min_ttl": 255,
+    "max_ttl": 255
+  },
+  "community_id": "1:5hN96gFE7mXOFNs8iBs7cZsk/fc="
+}
+{
+  "timestamp": "2026-01-27T19:39:39.259919+0100",
+  "flow_id": 2249285167643952,
+  "in_iface": "enp5s0",
+  "event_type": "netflow",
+  "src_ip": "192.168.0.1",
+  "src_port": 2647,
+  "dest_ip": "224.0.37.42",
+  "dest_port": 2647,
+  "proto": "UDP",
+  "app_proto": "failed",
+  "netflow": {
+    "pkts": 26,
+    "bytes": 1560,
+    "start": "2026-01-27T19:26:50.752944+0100",
+    "end": "2026-01-27T19:39:20.794993+0100",
+    "age": 750,
+    "min_ttl": 128,
+    "max_ttl": 128
+  },
+  "community_id": "1:KN5gxUhniJitABb5Yh73P90Fj7s="
+}
+{
+  "timestamp": "2026-01-27T19:39:39.259943+0100",
+  "flow_id": 138227184908877,
+  "in_iface": "enp5s0",
+  "event_type": "netflow",
+  "src_ip": "fe80:0000:0000:0000:9209:d0ff:fe2b:9a89",
+  "dest_ip": "ff02:0000:0000:0000:0000:0001:ff2b:9a89",
+  "proto": "IPv6-ICMP",
+  "icmp_type": 131,
+  "icmp_code": 0,
+  "netflow": {
+    "pkts": 1,
+    "bytes": 86,
+    "start": "2026-01-27T19:38:57.211533+0100",
+    "end": "2026-01-27T19:38:57.211533+0100",
+    "age": 0,
+    "min_ttl": 1,
+    "max_ttl": 1
+  },
+  "community_id": "1:KLbKn5yc0N3GKI+socFD5oQFp00="
+}
+{
+  "timestamp": "2026-01-27T19:39:39.259969+0100",
+  "flow_id": 982843240817217,
+  "in_iface": "enp5s0",
+  "event_type": "netflow",
+  "src_ip": "fe80:0000:0000:0000:1ca3:d298:3faf:30c0",
+  "dest_ip": "ff02:0000:0000:0000:0000:0000:0000:0001",
+  "proto": "IPv6-ICMP",
+  "icmp_type": 134,
+  "icmp_code": 0,
+  "netflow": {
+    "pkts": 1,
+    "bytes": 126,
+    "start": "2026-01-27T19:38:53.401985+0100",
+    "end": "2026-01-27T19:38:53.401985+0100",
+    "age": 0,
+    "min_ttl": 255,
+    "max_ttl": 255
+  },
+  "community_id": "1:7Gjx/+wMJG1t0Bpmcu/C1ayxP94="
+}
