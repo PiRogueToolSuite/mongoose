@@ -61,7 +61,7 @@ class SqliteStore:
 
     def start(self):
         """Start the storage worker thread.
-        
+
         This method launches a background daemon thread that runs the `_run` loop
         to process and persist data from the subscribed topics.
         """
@@ -74,7 +74,7 @@ class SqliteStore:
 
     def _run(self):
         """Main worker loop to process messages from all topics.
-        
+
         Subscribes to all topics defined in `model_map` and continuously polls the
         queue for new data. Each received item is passed to `_save_data` for persistence.
         The loop terminates when `processing_stopped()` returns True.
@@ -95,13 +95,14 @@ class SqliteStore:
             except Exception as e:
                 # queue.get timeout raises queue.Empty, but we can just continue
                 import queue as q
+
                 if isinstance(e, q.Empty):
                     continue
                 logger.error(f"Error in SqliteStore worker: {e}")
 
     def _save_data(self, data: any):
         """Identify data type and save it to the database.
-        
+
         Orchestrates the persistence process by mapping the input data to target models,
         converting it to a dictionary, and then persisting it.
 
@@ -133,7 +134,7 @@ class SqliteStore:
 
     def _model_to_dict(self, data: any) -> dict:
         """Convert Pydantic model to dict, handling version differences and extra fields.
-        
+
         Handles Pydantic v1 (`.dict()`) and v2 (`.model_dump()`) compatibility.
         Also ensures that specific properties like `community_id_b64` are included
         in the resulting dictionary if present on the model.

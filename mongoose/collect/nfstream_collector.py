@@ -18,13 +18,6 @@ class NFStreamCollector(Thread):
     converts each captured NFStreamer flow into the project's `NetworkFlow`
     model, resolves a human-readable protocol name via `PROTOCOL_NUMBERS`,
     and publishes the flow to a `ProcessingQueue`.
-
-    Attributes:
-        configuration: Configuration object providing `interface` and
-            `active_timeout` used to configure `NFStreamer`.
-        processing_queue: Queue used to publish `NetworkFlow` objects for
-            downstream processing.
-        disabled: Flag used to disable collection early (checked in `collect`).
     """
 
     def __init__(self, configuration: NFStreamConfiguration):
@@ -41,8 +34,11 @@ class NFStreamCollector(Thread):
         """
         super().__init__()
         self.configuration = configuration
+        """Configuration object providing `interface` and `active_timeout` used to configure `NFStreamer`."""
         self.processing_queue = ProcessingQueue()
+        """Queue used to publish `NetworkFlow` objects for downstream processing."""
         self.disabled = False
+        """Flag used to disable collection early (checked in `collect`)."""
         self.topic = ProcessingTopic.NETWORK_DPI
 
     @staticmethod
@@ -97,15 +93,11 @@ class NFStreamCollector(Thread):
         streamer = NFStreamer(
             source=self.configuration.interface,
             active_timeout=self.configuration.active_timeout,
-            max_nflows=self.configuration.max_nflows
+            max_nflows=self.configuration.max_nflows,
         )
         for _flow in streamer:
             # Build NetworkFlow from NFStreamer flow attributes, excluding 'id'
-            flow = NetworkDPI(**{
-                k: getattr(_flow, k)
-                for k in _flow.keys()
-                if k != "id"
-            })
+            flow = NetworkDPI(**{k: getattr(_flow, k) for k in _flow.keys() if k != "id"})
             # Convert times
             flow.time = datetime.datetime.fromtimestamp(_flow.bidirectional_first_seen_ms / 1000.0).astimezone()
             flow.timestamp = flow.time.timestamp()

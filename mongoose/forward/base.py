@@ -1,4 +1,3 @@
-import json
 import logging
 import threading
 from typing import Any, Dict, List, Optional
@@ -90,6 +89,7 @@ class BaseForwarder:
                 queue.task_done()
             except Exception as e:
                 import queue as q
+
                 if isinstance(e, q.Empty):
                     continue
                 logger.error(f"Error in {self.__class__.__name__} worker: {e}")

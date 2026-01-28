@@ -101,12 +101,12 @@ class FileForwarder(BaseForwarder):
     def _get_topic_for_data(self, data: Any) -> ProcessingTopic | None:
         """Determine the topic for the given data instance."""
         from mongoose.models import NetworkAlert, NetworkFlow, NetworkDPI
-        
+
         if isinstance(data, NetworkAlert):
             return ProcessingTopic.NETWORK_ALERT
         if isinstance(data, NetworkFlow):
             return ProcessingTopic.NETWORK_FLOW
         if isinstance(data, NetworkDPI):
             return ProcessingTopic.NETWORK_DPI
-        
+
         return None

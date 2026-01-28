@@ -31,20 +31,19 @@ class ProcessingQueue:
     (e.g., a database storer and a webhook forwarder) can process the same stream
     of events independently.
 
-    Attributes:
-        subscribers: Mapping of subscriber IDs to their topic-specific queues.
-        queues: Mapping of topics to lists of subscriber queues.
-        stop_processing_event: Event flag to signal processing termination.
-
     Note:
         Topics are created dynamically when the first subscriber registers.
         Therefore, subscribers MUST be registered before any data is published to a topic.
         If `publish()` is called for a topic with no active subscribers, it will raise
         a `TopicNotFoundException`.
     """
+
     subscribers: Dict[str, Dict[ProcessingTopic, Queue]] = defaultdict(dict)
+    """Mapping of subscriber IDs to their topic-specific queues."""
     queues: Dict[ProcessingTopic, List[Queue]] = defaultdict(list)
+    """Mapping of topics to lists of subscriber queues."""
     stop_processing_event = Event()
+    """Event flag to signal processing termination."""
 
     def publish(self, topic: ProcessingTopic, data: Any):
         """Publish data to all subscribers of a specific topic.

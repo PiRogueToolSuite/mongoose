@@ -3,7 +3,7 @@ from typing import Dict, List, Optional, Union
 from pydantic import BaseModel, Field, HttpUrl, SecretStr, validator
 
 
-class WebhookConfiguration(BaseModel):
+class WebhookForwarderConfiguration(BaseModel):
     """Configuration for the Webhook Forwarder.
 
     This class defines the destination, authentication, and reliability settings
@@ -17,29 +17,57 @@ class WebhookConfiguration(BaseModel):
           self-signed certificates in controlled environments.
         - **URL**: Ensure the `url` uses `https://` for encrypted transport of
           potentially sensitive network data.
-
-    Attributes:
-        url: The destination URL for the webhook (must be a valid HTTP/HTTPS URL).
-        headers: Optional dictionary of additional HTTP headers to include in requests.
-        auth_type: Type of authentication ('none', 'basic', 'bearer', 'header').
-        auth_token: Credentials (API key, token, or 'user:pass' for basic auth).
-        auth_header_name: Name of the header if auth_type is 'header' (default: X-API-Key).
-        verify_ssl: Whether to verify SSL certificates. Defaults to True.
-        retry_count: Number of retries for failed requests. Defaults to 3.
-        retry_delay: Delay between retries in seconds. Defaults to 5.0.
-        timeout: Request timeout in seconds. Defaults to 10.0.
-        topics: List of topics to forward. Defaults to ["network-dpi", "network-alert"].
     """
+
     url: Union[HttpUrl, str]
+    """The destination URL for the webhook (must be a valid HTTP/HTTPS URL)."""
+
     headers: Dict[str, str] = Field(default_factory=dict)
-    auth_type: str = "none"  # none, basic, bearer, header
+    """Optional dictionary of additional HTTP headers to include in requests."""
+
+    auth_type: str = Field(default="none")  # none, basic, bearer, header
+    """Type of authentication ('none', 'basic', 'bearer', 'header')."""
+
     auth_token: Optional[SecretStr] = None
-    auth_header_name: str = "X-API-Key"
+    """Credentials such as API key or token."""
+
+    auth_header_name: str = Field(default="X-API-Key")
+    """Name of the header if `auth_type` is 'header'."""
+
     verify_ssl: bool = True
+    """Whether to verify SSL certificates. Defaults to True."""
+
     retry_count: int = Field(default=3, ge=0)
+    """Number of retries for failed requests. Defaults to 3."""
+
     retry_delay: float = Field(default=5.0, ge=0)
+    """Delay between retries in seconds. Defaults to 5.0."""
+
     timeout: float = Field(default=10.0, gt=0)
+    """Request timeout in seconds. Defaults to 10.0."""
+
     topics: List[str] = Field(default_factory=lambda: ["network-dpi", "network-alert"])
+    """List of topics to forward. Defaults to ["network-dpi", "network-alert"]."""
+
+    # Forwarding modes
+    mode: str = Field(default="immediate")  # immediate, bulk, periodic
+    """Forwarding mode ('immediate', 'bulk', 'periodic'). Defaults to 'immediate'."""
+
+    bulk_size: int = Field(default=10, ge=1)
+    """Maximum number of items to batch in 'bulk' mode. Defaults to 10."""
+
+    periodic_interval: float = Field(default=5.0, ge=0.1)
+    """Time interval in seconds between sends in 'periodic' mode. Defaults to 5.0."""
+
+    periodic_rate: int = Field(default=10, ge=1)
+    """Maximum number of items to send per interval in 'periodic' mode. Defaults to 10."""
+
+    @validator("mode")
+    def validate_mode(cls, v):
+        allowed = ["immediate", "bulk", "periodic"]
+        if v not in allowed:
+            raise ValueError(f"mode must be one of {allowed}")
+        return v
 
     @validator("auth_type")
     def validate_auth_type(cls, v):
@@ -65,15 +93,14 @@ class FileForwarderConfiguration(BaseModel):
     This class defines the output directory and topics for dumping network
     events into files. Each topic will have its own file in the specified
     directory.
-
-    Attributes:
-        output_dir: The directory where the files will be created.
-        topics: List of topics to forward (e.g., ["network-dpi", "network-alert"]).
-        prefix: Optional prefix for the filenames (e.g., "mongoose-").
     """
+
     output_dir: str = "output"
+    """The directory where the files will be created."""
     topics: List[str] = Field(default_factory=lambda: ["network-dpi", "network-alert", "network-flow"])
+    """List of topics to forward (e.g., ["network-dpi", "network-alert"])."""
     prefix: str = ""
+    """Optional prefix for the filenames (e.g., "mongoose-")."""
 
 
 class NFStreamConfiguration(BaseModel):
