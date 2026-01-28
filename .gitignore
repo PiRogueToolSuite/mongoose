@@ -101,3 +101,4 @@ node_modules
 /*.egg-info
 /trash
 test_mongoose.db
+test-*.md
