@@ -740,3 +740,37 @@
   },
   "community_id": "1:7Gjx/+wMJG1t0Bpmcu/C1ayxP94="
 }
+
+{
+  "timestamp": "2026-01-27T19:27:40.905692+0100",
+  "flow_id": 649396968280540,
+  "in_iface": "enp5s0",
+  "event_type": "alert",
+  "src_ip": "192.168.0.12",
+  "src_port": 33185,
+  "dest_ip": "8.8.8.8",
+  "dest_port": 53,
+  "proto": "UDP",
+  "community_id": "1:lyRVkF7v7ci3Gr5FqyvZ6DtvgxI=",
+  "alert": {
+    "action": "allowed",
+    "gid": 1,
+    "signature_id": 2240007,
+    "rev": 2,
+    "signature": "SURICATA DNS",
+    "category": "Generic Protocol Command Decode",
+    "severity": 3
+  },
+  "dns": {
+    "query": [
+      {
+        "type": "query",
+        "id": 52888,
+        "rrname": "staging.colander.defensive-lab.agency",
+        "rrtype": "A",
+        "tx_id": 0
+      }
+    ]
+  },
+  "app_proto": "dns"
+}

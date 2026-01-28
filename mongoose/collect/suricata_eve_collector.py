@@ -22,11 +22,6 @@ class SuricataEveCollector(Thread):
 
     It handles socket connection retries and ensures graceful termination through
     the `ProcessingQueue` stop signal or the `disabled` flag.
-
-    Attributes:
-        configuration: Configuration object providing `socket_path`.
-        processing_queue: Queue used to publish events for downstream processing.
-        disabled: Flag used to disable collection early.
     """
 
     def __init__(self, configuration: SuricataEveConfiguration):
@@ -38,8 +33,11 @@ class SuricataEveCollector(Thread):
         """
         super().__init__()
         self.configuration = configuration
+        """Configuration object providing `socket_path`."""
         self.processing_queue = ProcessingQueue()
+        """Queue used to publish events for downstream processing."""
         self.disabled = False
+        """Flag used to disable collection early."""
 
     def run(self):
         """
@@ -70,7 +68,7 @@ class SuricataEveCollector(Thread):
 
                     # Suricata EVE socket is a stream of JSON objects, each followed by a newline.
                     # We can use a file-like object to read line by line.
-                    with client.makefile('r') as socket_file:
+                    with client.makefile("r") as socket_file:
                         for line in socket_file:
                             if not line.strip():
                                 continue
@@ -89,6 +87,7 @@ class SuricataEveCollector(Thread):
                     if self.processing_queue.processing_stopped():
                         break
                     import time
+
                     time.sleep(0.1)
             except Exception as e:
                 logger.error(f"Unexpected error in Suricata collector: {e}")
@@ -111,10 +110,14 @@ class SuricataEveCollector(Thread):
         if event_type == "alert":
             # Map EVE alert to NetworkAlert
             alert_data = event.copy()
-            # Extract alert sub-dictionary if present, as NetworkAlert fields 
+            # Extract alert sub-dictionary if present, as NetworkAlert fields
             # might be partially in 'alert' key and partially at top level
             if "alert" in event:
                 alert_data.update(event["alert"])
+
+            app_proto = event.get("app_proto")
+            if app_proto in event:
+                alert_data["extra"] = event[app_proto]
 
             # Map common fields if they differ
             if "proto" in event:

@@ -42,10 +42,10 @@ class MockSuricataSocket:
                 try:
                     conn, _ = self.server_socket.accept()
                     with conn:
-                        with open(self.data_file, 'r') as f:
+                        with open(self.data_file, "r") as f:
                             content = f.read()
                             # Split multi-line JSON objects
-                            json_objs = re.findall(r'\{.*?^\}', content, re.DOTALL | re.MULTILINE)
+                            json_objs = re.findall(r"\{.*?^\}", content, re.DOTALL | re.MULTILINE)
                             for obj in json_objs:
                                 try:
                                     # Validate and compact
@@ -70,7 +70,6 @@ class MockSuricataSocket:
 
 
 def test_suricata_eve_collector_real_data():
-    # Use a shorter path for the socket to avoid "AF_UNIX path too long" error
     socket_path = "/tmp/suricata_test.socket"
     data_file = "tests/data/suricata_eve.json"
 
@@ -82,8 +81,18 @@ def test_suricata_eve_collector_real_data():
 
     pq = ProcessingQueue()
     flow_q = pq.subscribe(ProcessingTopic.NETWORK_FLOW, "test_sub")
+    alert_q = pq.subscribe(ProcessingTopic.NETWORK_ALERT, "test_sub_alerts")
 
     collector.start()
+
+    received_alerts = []
+    start_time = time.time()
+    # Expect 1 alert from the file
+    while len(received_alerts) < 1 and (time.time() - start_time) < 10:
+        if not alert_q.empty():
+            received_alerts.append(alert_q.get_nowait())
+        else:
+            time.sleep(0.1)
 
     received_flows = []
     start_time = time.time()
@@ -126,8 +135,8 @@ def test_suricata_eve_collector_alert_mapping():
             "rev": 1,
             "signature": "ET POLICY Test Alert",
             "category": "Potentially Bad Traffic",
-            "severity": 2
-        }
+            "severity": 2,
+        },
     }
 
     pq = ProcessingQueue()

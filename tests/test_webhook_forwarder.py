@@ -8,7 +8,7 @@ from pydantic import SecretStr
 
 from mongoose.core.engine import ProcessingQueue, ProcessingTopic
 from mongoose.forward.webhook import WebhookForwarder, WebhookFormatter
-from mongoose.models.configuration import WebhookConfiguration
+from mongoose.models.configuration import WebhookForwarderConfiguration
 from mongoose.models import NetworkAlert
 
 
@@ -22,7 +22,7 @@ class WebhookReceiverMock:
         self._mock_post = None
 
     def start(self):
-        self._patcher = patch.object(requests.Session, 'post')
+        self._patcher = patch.object(requests.Session, "post")
         self._mock_post = self._patcher.start()
         self._mock_post.side_effect = self._handle_post
 
@@ -36,18 +36,18 @@ class WebhookReceiverMock:
 
     def _handle_post(self, url, **kwargs):
         self.requests.append({"url": url, **kwargs})
-        
+
         if not self.responses:
             # Default response
             mock_resp = MagicMock(spec=requests.Response)
             mock_resp.status_code = 200
             mock_resp.raise_for_status.return_value = None
             return mock_resp
-        
+
         status_code, exception = self.responses.pop(0)
         if exception:
             raise exception
-        
+
         mock_resp = MagicMock(spec=requests.Response)
         mock_resp.status_code = status_code
         if 400 <= status_code < 600:
@@ -76,9 +76,19 @@ def reset_processing_queue():
 
 def test_webhook_formatter_alert():
     alert = NetworkAlert(
-        flow_id=1, src_ip="1.1.1.1", src_port=123, dst_ip="2.2.2.2", dst_port=80,
-        protocol="TCP", action="allowed", gid=1, signature_id=1, rev=1,
-        signature="s", category="c", severity=1
+        flow_id=1,
+        src_ip="1.1.1.1",
+        src_port=123,
+        dst_ip="2.2.2.2",
+        dst_port=80,
+        protocol="TCP",
+        action="allowed",
+        gid=1,
+        signature_id=1,
+        rev=1,
+        signature="s",
+        category="c",
+        severity=1,
     )
     formatted = WebhookFormatter.format(alert)
     assert formatted["src_ip"] == "1.1.1.1"
@@ -89,98 +99,206 @@ def test_webhook_formatter_alert():
 
 
 def test_webhook_forwarder_basic_flow(webhook_receiver):
-    config = WebhookConfiguration(
-        url="http://example.com/webhook",
-        retry_count=0,
-        topics=["network-alert"]
-    )
-    
+    config = WebhookForwarderConfiguration(url="http://example.com/webhook", retry_count=0, topics=["network-alert"])
+
     pq = ProcessingQueue()
     forwarder = WebhookForwarder(config)
-    
+
     alert = NetworkAlert(
-        flow_id=1, src_ip="1.1.1.1", src_port=123, dst_ip="2.2.2.2", dst_port=80,
-        protocol="TCP", action="allowed", gid=1, signature_id=1, rev=1,
-        signature="s", category="c", severity=1
+        flow_id=1,
+        src_ip="1.1.1.1",
+        src_port=123,
+        dst_ip="2.2.2.2",
+        dst_port=80,
+        protocol="TCP",
+        action="allowed",
+        gid=1,
+        signature_id=1,
+        rev=1,
+        signature="s",
+        category="c",
+        severity=1,
     )
-    
+
     webhook_receiver.add_response(status_code=200)
-    
+
     forwarder.start()
     pq.publish(ProcessingTopic.NETWORK_ALERT, alert)
-    
+
     # Give it a moment to process
     time.sleep(0.5)
-    
+
     assert len(webhook_receiver.requests) == 1
     req = webhook_receiver.requests[0]
     assert req["url"] == "http://example.com/webhook"
     assert req["json"]["src_ip"] == "1.1.1.1"
-    
+
     pq.stop_processing()
 
 
 def test_webhook_forwarder_auth_bearer():
-    config = WebhookConfiguration(
-        url="http://example.com/webhook",
-        auth_type="bearer",
-        auth_token=SecretStr("mytoken"),
-        topics=["network-alert"]
+    config = WebhookForwarderConfiguration(
+        url="http://example.com/webhook", auth_type="bearer", auth_token=SecretStr("mytoken"), topics=["network-alert"]
     )
-    
+
     forwarder = WebhookForwarder(config)
     assert forwarder._session.headers["Authorization"] == "Bearer mytoken"
 
 
 def test_webhook_forwarder_auth_header():
-    config = WebhookConfiguration(
+    config = WebhookForwarderConfiguration(
         url="http://example.com/webhook",
         auth_type="header",
         auth_token=SecretStr("my-api-key"),
         auth_header_name="X-Custom-Key",
-        topics=["network-alert"]
+        topics=["network-alert"],
     )
-    
+
     forwarder = WebhookForwarder(config)
     assert forwarder._session.headers["X-Custom-Key"] == "my-api-key"
 
 
 def test_webhook_forwarder_retries(webhook_receiver):
-    config = WebhookConfiguration(
-        url="http://example.com/webhook",
-        retry_count=1,
-        retry_delay=0.1,
-        topics=["network-alert"]
+    config = WebhookForwarderConfiguration(
+        url="http://example.com/webhook", retry_count=1, retry_delay=0.1, topics=["network-alert"]
     )
-    
+
     pq = ProcessingQueue()
     forwarder = WebhookForwarder(config)
-    
+
     alert = NetworkAlert(
-        flow_id=1, src_ip="1.1.1.1", src_port=123, dst_ip="2.2.2.2", dst_port=80,
-        protocol="TCP", action="allowed", gid=1, signature_id=1, rev=1,
-        signature="s", category="c", severity=1
+        flow_id=1,
+        src_ip="1.1.1.1",
+        src_port=123,
+        dst_ip="2.2.2.2",
+        dst_port=80,
+        protocol="TCP",
+        action="allowed",
+        gid=1,
+        signature_id=1,
+        rev=1,
+        signature="s",
+        category="c",
+        severity=1,
     )
-    
+
     # First call fails with ConnectionError, second succeeds
     webhook_receiver.add_response(exception=requests.exceptions.ConnectionError("Failed"))
     webhook_receiver.add_response(status_code=200)
-    
+
     forwarder.start()
     pq.publish(ProcessingTopic.NETWORK_ALERT, alert)
-    
+
     time.sleep(0.5)
-    
+
     assert len(webhook_receiver.requests) == 2
-    
+
     pq.stop_processing()
+
 
 def test_webhook_configuration_validation():
     with pytest.raises(ValueError, match="auth_type must be one of"):
-        WebhookConfiguration(url="http://example.com", auth_type="invalid")
-    
+        WebhookForwarderConfiguration(url="http://example.com", auth_type="invalid")
+
     with pytest.raises(ValueError, match="auth_token is required"):
-        WebhookConfiguration(url="http://example.com", auth_type="bearer")
+        WebhookForwarderConfiguration(url="http://example.com", auth_type="bearer")
 
     with pytest.raises(ValueError, match="must be in 'user:pass' format"):
-        WebhookConfiguration(url="http://example.com", auth_type="basic", auth_token=SecretStr("not-a-pair"))
+        WebhookForwarderConfiguration(url="http://example.com", auth_type="basic", auth_token=SecretStr("not-a-pair"))
+
+
+def test_webhook_forwarder_bulk_mode(webhook_receiver):
+    config = WebhookForwarderConfiguration(
+        url="http://example.com/webhook", mode="bulk", bulk_size=2, topics=["network-alert"]
+    )
+
+    pq = ProcessingQueue()
+    forwarder = WebhookForwarder(config)
+
+    alert = NetworkAlert(
+        flow_id=1,
+        src_ip="1.1.1.1",
+        src_port=123,
+        dst_ip="2.2.2.2",
+        dst_port=80,
+        protocol="TCP",
+        action="allowed",
+        gid=1,
+        signature_id=1,
+        rev=1,
+        signature="s",
+        category="c",
+        severity=1,
+    )
+
+    forwarder.start()
+
+    # Publish 1st alert - should not trigger send yet
+    pq.publish(ProcessingTopic.NETWORK_ALERT, alert)
+    time.sleep(0.2)
+    assert len(webhook_receiver.requests) == 0
+
+    # Publish 2nd alert - should trigger send
+    pq.publish(ProcessingTopic.NETWORK_ALERT, alert)
+    time.sleep(0.5)
+
+    assert len(webhook_receiver.requests) == 1
+    assert isinstance(webhook_receiver.requests[0]["json"], list)
+    assert len(webhook_receiver.requests[0]["json"]) == 2
+
+    pq.stop_processing()
+
+
+def test_webhook_forwarder_periodic_mode(webhook_receiver):
+    config = WebhookForwarderConfiguration(
+        url="http://example.com/webhook",
+        mode="periodic",
+        periodic_interval=0.5,
+        periodic_rate=2,
+        topics=["network-alert"],
+    )
+
+    pq = ProcessingQueue()
+    forwarder = WebhookForwarder(config)
+
+    alert = NetworkAlert(
+        flow_id=1,
+        src_ip="1.1.1.1",
+        src_port=123,
+        dst_ip="2.2.2.2",
+        dst_port=80,
+        protocol="TCP",
+        action="allowed",
+        gid=1,
+        signature_id=1,
+        rev=1,
+        signature="s",
+        category="c",
+        severity=1,
+    )
+
+    forwarder.start()
+
+    # Publish 3 alerts
+    pq.publish(ProcessingTopic.NETWORK_ALERT, alert)
+    pq.publish(ProcessingTopic.NETWORK_ALERT, alert)
+    pq.publish(ProcessingTopic.NETWORK_ALERT, alert)
+
+    # Should not have sent anything immediately
+    assert len(webhook_receiver.requests) == 0
+
+    # Wait for interval
+    time.sleep(0.7)
+
+    # Should have sent 2 alerts (periodic_rate)
+    assert len(webhook_receiver.requests) == 1
+    assert len(webhook_receiver.requests[0]["json"]) == 2
+
+    # Wait for another interval
+    time.sleep(0.6)
+
+    # Should have sent the remaining 1 alert
+    assert len(webhook_receiver.requests) == 2
+    assert len(webhook_receiver.requests[1]["json"]) == 1
+
+    pq.stop_processing()

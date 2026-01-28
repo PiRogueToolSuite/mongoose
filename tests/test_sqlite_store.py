@@ -44,7 +44,7 @@ def test_sqlite_store_save_alert(db_path):
         rev=1,
         signature="test signature",
         category="test category",
-        severity=1
+        severity=1,
     )
 
     pq.publish(ProcessingTopic.NETWORK_ALERT, alert)
@@ -76,18 +76,43 @@ def test_sqlite_store_save_all_types(db_path):
     store.start()
 
     alert = NetworkAlert(
-        flow_id=1, src_ip="1.1.1.1", src_port=123, dst_ip="2.2.2.2", dst_port=80,
-        protocol="TCP", action="allowed", gid=1, signature_id=1, rev=1,
-        signature="s", category="c", severity=1
+        flow_id=1,
+        src_ip="1.1.1.1",
+        src_port=123,
+        dst_ip="2.2.2.2",
+        dst_port=80,
+        protocol="TCP",
+        action="allowed",
+        gid=1,
+        signature_id=1,
+        rev=1,
+        signature="s",
+        category="c",
+        severity=1,
     )
     flow = NetworkFlow(
-        flow_id=2, src_ip="1.1.1.1", src_port=123, dst_ip="2.2.2.2", dst_port=80,
-        protocol="TCP", packets=10, bytes=1000, start="2023-01-01T00:00:00", end="2023-01-01T00:00:01", age=1
+        flow_id=2,
+        src_ip="1.1.1.1",
+        src_port=123,
+        dst_ip="2.2.2.2",
+        dst_port=80,
+        protocol="TCP",
+        packets=10,
+        bytes=1000,
+        start="2023-01-01T00:00:00",
+        end="2023-01-01T00:00:01",
+        age=1,
     )
     dpi = NetworkDPI(
-        ip_version=4, src_ip="1.1.1.1", src_port=123, src_mac="aa:bb:cc",
-        dst_ip="2.2.2.2", dst_port=80, dst_mac="dd:ee:ff",
-        dst2src_bytes=500, src2dst_bytes=500
+        ip_version=4,
+        src_ip="1.1.1.1",
+        src_port=123,
+        src_mac="aa:bb:cc",
+        dst_ip="2.2.2.2",
+        dst_port=80,
+        dst_mac="dd:ee:ff",
+        dst2src_bytes=500,
+        src2dst_bytes=500,
     )
 
     pq.publish(ProcessingTopic.NETWORK_ALERT, alert)
@@ -98,9 +123,11 @@ def test_sqlite_store_save_all_types(db_path):
     max_retries = 20
     for _ in range(max_retries):
         with store.Session() as session:
-            if (session.query(NetworkAlertTable).count() > 0 and
-                    session.query(NetworkFlowTable).count() > 0 and
-                    session.query(NetworkDPITable).count() > 0):
+            if (
+                session.query(NetworkAlertTable).count() > 0
+                and session.query(NetworkFlowTable).count() > 0
+                and session.query(NetworkDPITable).count() > 0
+            ):
                 break
         time.sleep(0.1)
 
