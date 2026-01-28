@@ -6,7 +6,6 @@ requires = [ "hatchling", "uv-dynamic-versioning" ]
 [project]
 name = "mongoose"
 description = "Helpers to collect, enrich and store Suricata events and network flows."
-requires-python = ">=3.11"
 readme = "README.md"
 license = "GPL-3.0-or-later"
 maintainers = [
@@ -15,6 +14,7 @@ maintainers = [
 authors = [
   { name = "U+039b", email = "hello@pts-project.org" },
 ]
+requires-python = ">=3.11"
 classifiers = [
   "Programming Language :: Python :: 3 :: Only",
   "Programming Language :: Python :: 3.11",
@@ -23,11 +23,11 @@ classifiers = [
 ]
 dynamic = [ "version" ]
 dependencies = [
-    "communityid==1.4",
-    "nfstream==6.5.4",
-    "pydantic==1.10.4",
-    "sqlalchemy==1.4.46",
-    "requests==2.28.1",
+  "communityid==1.4",
+  "nfstream==6.5.4",
+  "pydantic==1.10.4",
+  "requests==2.28.1",
+  "sqlalchemy==1.4.46",
 ]
 
 [dependency-groups]
@@ -53,7 +53,6 @@ test = [
 
 docs = [
   "autoclasstoc",
-  "docutils-stubs",
   "myst-parser",
   "sphinx",
   "sphinx-autobuild",
@@ -62,10 +61,11 @@ docs = [
   "sphinx-jsonschema",
   "sphinx-needs",
   "sphinx-notfound-page",
+  "sphinx-pydantic",
   "sphinx-rtd-theme",
+  "sphinx-sqlalchemy",
   "sphinx-toolbox",
   "sphinxcontrib-datatemplates",
-  "types-docutils",
 ]
 
 [tool.hatch.build.targets.sdist]
@@ -104,7 +104,31 @@ format.skip-magic-trailing-comma = false
 format.docstring-code-line-length = "dynamic"
 format.docstring-code-format = false
 lint.select = [ "E4", "E7", "E9", "F" ]
-lint.ignore = [ "E722", "F403", "F405", "F841" ]
+lint.ignore = [ "E722", "F401", "F403", "F405", "F841" ]
 lint.fixable = [ "ALL" ]
 lint.unfixable = [  ]
 lint.dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+
+[tool.coverage.run]
+omit = [
+  "*test_*",
+  "docs/*",
+]
+
+[tool.coverage.report]
+omit = [
+  "*test_*",
+  "docs/*",
+]
+
+[tool.uv-dynamic-versioning]
+fallback-version = "0.0.0"
+
+[tool.bandit]
+targets = [ "mongoose" ]
+exclude_dirs = [ "tests", "doc" ]
+skips = [ "B101" ]
+
+[tool.uv]
+concurrent-builds = 4
+trusted-publishing = "always"
