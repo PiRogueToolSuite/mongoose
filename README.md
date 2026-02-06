@@ -1,4 +1,4 @@
-<div style="text-align: center;">
+<div align="center">
 <img width="60px" src="https://pts-project.org/android-chrome-512x512.png" alt="PTS logo">
 <h1>Mongoose</h1>
 <p>
