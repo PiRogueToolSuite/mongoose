@@ -4,23 +4,23 @@ from datetime import datetime
 from uuid import uuid4
 
 import sqlalchemy as sa
-from pydantic import BaseModel, Field, ConfigDict, validator
+from pydantic import BaseModel, Field, validator
 
 from mongoose.models.base import Base
 
 
 class NetworkFlow(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
+    class Config:
+        from_attributes = True
 
     id: str = Field(default_factory=lambda: uuid4().hex, frozen=True)
     time: datetime = Field(default_factory=datetime.now)
     timestamp: float = Field(default_factory=lambda: int(time.time()))
     community_id: str = ""
+    risk: int = 0  # 0: normal, 1: suspicious, 2: critical
     flow_id: int
     src_ip: str
-    src_port: int
     dst_ip: str = Field(validation_alias="dest_ip")
-    dst_port: int = Field(validation_alias="dest_port")
     protocol: str = Field(validation_alias="proto")
     app_proto: str = ""
     packets: int = Field(validation_alias="pkts")
@@ -28,6 +28,7 @@ class NetworkFlow(BaseModel):
     start: datetime
     end: datetime
     age: int
+    enrichment: dict = Field(default_factory=dict)
     extra: dict = Field(default_factory=dict)
 
     @property
@@ -59,13 +60,12 @@ class NetworkFlowTable(Base):
     id = sa.Column(sa.String, primary_key=True)
     time = sa.Column(sa.DateTime)
     timestamp = sa.Column(sa.Float)
-    community_id = sa.Column(sa.String)
+    community_id = sa.Column(sa.String, index=True)
     community_id_b64 = sa.Column(sa.String)
+    risk = sa.Column(sa.Integer)
     flow_id = sa.Column(sa.Integer)
-    src_ip = sa.Column(sa.String)
-    src_port = sa.Column(sa.Integer)
-    dst_ip = sa.Column(sa.String)
-    dst_port = sa.Column(sa.Integer)
+    src_ip = sa.Column(sa.String, index=True)
+    dst_ip = sa.Column(sa.String, index=True)
     protocol = sa.Column(sa.String)
     app_proto = sa.Column(sa.String)
     packets = sa.Column(sa.Integer)
@@ -73,4 +73,5 @@ class NetworkFlowTable(Base):
     start = sa.Column(sa.DateTime)
     end = sa.Column(sa.DateTime)
     age = sa.Column(sa.Integer)
+    enrichment = sa.Column(sa.JSON)
     extra = sa.Column(sa.JSON)

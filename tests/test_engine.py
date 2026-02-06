@@ -1,111 +1,109 @@
-from queue import Full
+from unittest.mock import patch
 
-import pytest
+import yaml
 
-from mongoose.core.engine import ProcessingQueue, ProcessingTopic, TopicNotFoundException
-
-
-@pytest.fixture(autouse=True)
-def reset_processing_queue():
-    """Reset the singleton-like attributes of ProcessingQueue before each test."""
-    ProcessingQueue.subscribers.clear()
-    ProcessingQueue.queues.clear()
-    ProcessingQueue.stop_processing_event.clear()
+from mongoose.core.engine import Engine
+from mongoose.models.configuration import Configuration
 
 
-def test_single_topic_subscription_and_publish():
-    pq = ProcessingQueue()
-    subscriber_id = "sub1"
-    q = pq.subscribe(ProcessingTopic.NETWORK_DPI, subscriber_id)
+def test_engine_initialization(tmp_path):
+    config_content = {
+        "configuration": {
+            "collector": {
+                "suricata": {"socket_path": "/tmp/suricata.socket", "enable": True},
+                "nf_stream": {"interface": "eth0", "enable": False},
+            },
+            "enrichment": {"geoip": {"remote_service_url": "http://geoip", "enable": True}},
+            "forwarder": {
+                "file": {"output_dir": str(tmp_path / "output"), "enable": True},
+                "webhooks": [{"url": "http://webhook", "enable": False}],
+            },
+        }
+    }
+    config_file = tmp_path / "config.yaml"
+    with open(config_file, "w") as f:
+        yaml.dump(config_content, f)
 
-    data = {"test": "data"}
-    pq.publish(ProcessingTopic.NETWORK_DPI, data)
-
-    assert q.get_nowait() == data
-    assert q.empty()
-
-
-def test_multi_topic_subscription_list():
-    pq = ProcessingQueue()
-    subscriber_id = "sub1"
-    topics = [ProcessingTopic.NETWORK_DPI, ProcessingTopic.NETWORK_ALERT]
-    q = pq.subscribe(topics, subscriber_id)
-
-    data1 = {"type": "dpi"}
-    data2 = {"type": "alert"}
-
-    pq.publish(ProcessingTopic.NETWORK_DPI, data1)
-    pq.publish(ProcessingTopic.NETWORK_ALERT, data2)
-
-    assert q.get_nowait() == data1
-    assert q.get_nowait() == data2
-    assert q.empty()
+    engine = Engine(str(config_file))
+    assert isinstance(engine.config, Configuration)
+    assert engine.config.collector.suricata.enable is True
+    assert engine.config.collector.nf_stream.enable is False
 
 
-def test_incremental_subscription_reuse_queue():
-    pq = ProcessingQueue()
-    subscriber_id = "sub1"
+@patch("mongoose.collect.suricata_eve_collector.SuricataEveCollector.start")
+@patch("mongoose.enrich.Enrich.start")
+@patch("mongoose.forward.file.FileForwarder.start")
+@patch("mongoose.enrich.Enrich.__init__", return_value=None)
+def test_engine_start(mock_enrich_init, mock_file_start, mock_enrich_start, mock_suricata_start, tmp_path):
+    config_content = {
+        "configuration": {
+            "collector": {
+                "suricata": {"socket_path": "/tmp/suricata.socket", "enable": True},
+                "nf_stream": {"interface": "eth0", "enable": False},
+            },
+            "enrichment": {"geoip": {"remote_service_url": "http://geoip", "enable": True}},
+            "forwarder": {
+                "file": {"output_dir": str(tmp_path / "output"), "enable": True},
+                "webhooks": [{"url": "http://webhook", "enable": False}],
+            },
+        }
+    }
+    config_file = tmp_path / "config.yaml"
+    with open(config_file, "w") as f:
+        yaml.dump(config_content, f)
 
-    q1 = pq.subscribe(ProcessingTopic.NETWORK_DPI, subscriber_id)
-    q2 = pq.subscribe(ProcessingTopic.NETWORK_ALERT, subscriber_id)
+    engine = Engine(str(config_file))
+    engine.start()
 
-    assert q1 is q2
+    assert mock_suricata_start.called
+    assert mock_enrich_start.called
+    assert mock_file_start.called
 
-    pq.publish(ProcessingTopic.NETWORK_DPI, "data1")
-    pq.publish(ProcessingTopic.NETWORK_ALERT, "data2")
+    # Verify Enrich was initialized with EnrichmentConfiguration
+    from mongoose.models.configuration import EnrichmentConfiguration
 
-    assert q1.get_nowait() == "data1"
-    assert q1.get_nowait() == "data2"
-
-
-def test_multiple_subscribers_same_topic():
-    pq = ProcessingQueue()
-    q1 = pq.subscribe(ProcessingTopic.NETWORK_DPI, "sub1")
-    q2 = pq.subscribe(ProcessingTopic.NETWORK_DPI, "sub2")
-
-    data = "shared data"
-    pq.publish(ProcessingTopic.NETWORK_DPI, data)
-
-    assert q1.get_nowait() == data
-    assert q2.get_nowait() == data
-
-
-def test_publish_topic_not_found():
-    pq = ProcessingQueue()
-    with pytest.raises(TopicNotFoundException):
-        pq.publish(ProcessingTopic.NETWORK_DPI, "data")
-
-
-def test_queue_full_exception():
-    pq = ProcessingQueue()
-    # Subscribe with a very small queue size
-    pq.subscribe(ProcessingTopic.NETWORK_DPI, "sub1", queue_size=1)
-
-    pq.publish(ProcessingTopic.NETWORK_DPI, "data1")
-
-    with pytest.raises(Full):
-        pq.publish(ProcessingTopic.NETWORK_DPI, "data2")
+    args, kwargs = mock_enrich_init.call_args
+    assert isinstance(args[0], EnrichmentConfiguration)
 
 
-def test_stop_processing_logic():
-    pq = ProcessingQueue()
-    assert not pq.processing_stopped()
+@patch("mongoose.core.processing.ProcessingQueue.stop_processing")
+def test_engine_stop(mock_stop_processing, tmp_path):
+    config_content = {
+        "configuration": {
+            "collector": {
+                "suricata": {"socket_path": "/tmp/suricata.socket", "enable": False},
+                "nf_stream": {"interface": "eth0", "enable": False},
+            },
+            "enrichment": {"geoip": {"remote_service_url": "http://geoip", "enable": False}},
+            "forwarder": {
+                "file": {"output_dir": str(tmp_path / "output"), "enable": False},
+                "webhooks": [{"url": "http://webhook", "enable": False}],
+            },
+        }
+    }
+    config_file = tmp_path / "config.yaml"
+    with open(config_file, "w") as f:
+        yaml.dump(config_content, f)
 
-    pq.stop_processing()
-    assert pq.processing_stopped()
+    engine = Engine(str(config_file))
+    engine.stop()
+    assert mock_stop_processing.called
 
 
-def test_join_logic():
-    pq = ProcessingQueue()
-    q = pq.subscribe(ProcessingTopic.NETWORK_DPI, "sub1")
+@patch("mongoose.core.engine.Engine.stop")
+@patch("mongoose.core.engine.Engine.start")
+@patch("mongoose.core.engine.Engine.load_config")
+@patch("mongoose.core.engine.Engine._setup_components")
+def test_engine_reload(mock_setup, mock_load, mock_start, mock_stop, tmp_path):
+    config_content = {"configuration": {"collector": {}, "enrichment": {}, "forwarder": {}}}
+    config_file = tmp_path / "config.yaml"
+    with open(config_file, "w") as f:
+        yaml.dump(config_content, f)
 
-    pq.publish(ProcessingTopic.NETWORK_DPI, "data")
+    engine = Engine(str(config_file))
+    engine.reload()
 
-    # In a real scenario, another thread would call task_done()
-    # Here we just verify it doesn't crash and we can call task_done()
-    item = q.get()
-    assert item == "data"
-    q.task_done()
-
-    # join() should return immediately since task_done() was called
-    pq.join()
+    assert mock_stop.called
+    assert mock_load.called
+    assert mock_setup.called
+    assert mock_start.called

@@ -1,142 +1,166 @@
-import enum
-from collections import defaultdict
 import logging
-from queue import Queue, Full
-from threading import Event
-from typing import Any, Dict, List
+import yaml
+from typing import List, Optional, Type
+
+from mongoose.core.processing import ProcessingQueue
+from mongoose.core.sink import Sink
+from mongoose.forward.discord import DiscordForwarder
+from mongoose.models.configuration import Configuration, WebhookForwarderConfiguration, ForwarderConfiguration
+from mongoose.collect.nfstream_collector import NFStreamCollector
+from mongoose.collect.suricata_eve_collector import SuricataEveCollector
+from mongoose.enrich.base import Enrich
+from mongoose.forward.file import FileForwarder
+from mongoose.forward.webhook import WebhookForwarder
+from mongoose.store.sqlite import SqliteStore
+from mongoose.core.cache import SeverityCache
+import mongoose.core.cache as cache_module
 
 logger = logging.getLogger(__name__)
 
 
-class TopicNotFoundException(Exception):
-    pass
-
-
-class ProcessingTopic(enum.Enum):
-    NETWORK_DPI = "network-dpi"  # from NFStream
-    NETWORK_ALERT = "network-alert"  # from Suricata
-    NETWORK_FLOW = "network-flow"  # from Suricata if netflow is enabled
-
-
-class ProcessingQueue:
-    """A thread-safe pub-sub queue system for managing topic-based message distribution.
-
-    This class implements a publish-subscribe pattern where:
-        - Subscribers register their interest in one or more topics using `subscribe()`.
-        - Publishers send data to specific topics using `publish()`.
-
-    Internally, each subscriber receives a dedicated `queue.Queue`. When data is
-    published to a topic, it is duplicated and pushed into the queues of all
-    subscribers registered for that topic. This ensures that multiple subscribers
-    (e.g., a database storer and a webhook forwarder) can process the same stream
-    of events independently.
-
-    Note:
-        Topics are created dynamically when the first subscriber registers.
-        Therefore, subscribers MUST be registered before any data is published to a topic.
-        If `publish()` is called for a topic with no active subscribers, it will raise
-        a `TopicNotFoundException`.
+class Engine:
+    """
+    The Engine class is responsible for loading the configuration,
+    initializing components (collectors, enrichers, forwarders),
+    and managing their lifecycle (start, stop, reload).
     """
 
-    subscribers: Dict[str, Dict[ProcessingTopic, Queue]] = defaultdict(dict)
-    """Mapping of subscriber IDs to their topic-specific queues."""
-    queues: Dict[ProcessingTopic, List[Queue]] = defaultdict(list)
-    """Mapping of topics to lists of subscriber queues."""
-    stop_processing_event = Event()
-    """Event flag to signal processing termination."""
+    def __init__(self, config_path: str):
+        self.config_path = config_path
+        self.config: Optional[Configuration] = None
+        self.processing_queue = ProcessingQueue()
+        self.collectors: List = []
+        self.forwarders: List = []
+        self.enrichment: Optional[Enrich] = None
+        self.database_storage = None
+        self.sink: Sink = Sink()
+        self.load_config()
+        self._setup_components()
 
-    def publish(self, topic: ProcessingTopic, data: Any):
-        """Publish data to all subscribers of a specific topic.
+    def load_extra_config(self, name: str, config_class: Type):
+        configurations = []
+        if self.config.extra_configuration_dir.is_dir():
+            config_dir = self.config.extra_configuration_dir / f"{name}.d"
+            if config_dir.exists():
+                for config_file in config_dir.glob("*.yaml"):
+                    with config_file.open(mode="r") as f:
+                        config_data = yaml.safe_load(f)
+                    if config_data:
+                        configurations.append(config_class(**config_data))
+        return configurations
 
-        Attempts to add data to all queues subscribed to the given topic without blocking.
-        Each subscriber of the topic will receive a copy of the data in its dedicated queue.
+    def load_config(self):
+        """Load configuration from the YAML file."""
+        try:
+            with open(self.config_path, "r") as f:
+                config_data = yaml.safe_load(f)
 
-        Args:
-            topic: The topic to publish data to.
-            data: The data to publish to subscribers.
+            if config_data and "configuration" in config_data:
+                self.config = Configuration(**config_data["configuration"])
+            elif config_data:
+                self.config = Configuration(**config_data)
+            else:
+                raise ValueError("Configuration file is empty")
 
-        Raises:
-            TopicNotFoundException: If the topic has no subscribers (no one called `subscribe()` for it).
-            Full: If any subscriber's queue is full and cannot accept more data.
+            configurations = self.load_extra_config("webhook", WebhookForwarderConfiguration)
+            if not self.config.forwarder:
+                self.config.forwarder = ForwarderConfiguration()
+            self.config.forwarder.webhooks.extend(configurations)
 
-        Note:
-            This method requires the topic to have at least one subscriber.
-            If no one has subscribed to the topic yet, it is considered non-existent.
-        """
-        logger.debug(f"Publishing data to {topic}")
-        if topic not in self.queues:
-            raise TopicNotFoundException(f"Topic {topic} not found")
-        for q in self.queues.get(topic, []):
-            try:
-                q.put_nowait(data)
-            except Full as e:
-                logger.error(f"Failed to publish data to {topic}: {e}")
-                raise e
+            # Initialize severity cache from configuration (if present)
+            if self.config and self.config.cache and self.config.cache.severity and self.config.cache.severity.enable:
+                sev_cfg = self.config.cache.severity
+                # Create the singleton SeverityCache with configured size and TTL
+                # Note: SeverityCache is a singleton; the first instantiation sets the configuration.
+                instance = SeverityCache(max_size=sev_cfg.max_size, ttl_seconds=sev_cfg.ttl_seconds)
+                # Export module-level instance for easy import elsewhere
+                cache_module.severity_cache = instance
 
-    def subscribe(self, topic: ProcessingTopic | List[ProcessingTopic], subscriber_id: str, queue_size=100) -> Queue:
-        """Subscribe to one or more topics and receive a dedicated queue for receiving data.
+            logger.info(f"Configuration loaded from {self.config_path}")
+        except Exception as e:
+            logger.error(f"Failed to load configuration from {self.config_path}: {e}")
+            raise
 
-        This method registers a subscriber for the specified topics. If it's the first
-        time a topic is subscribed to, the topic is effectively "created" in the system.
+    def _setup_components(self):
+        """Initialize all components based on the loaded configuration."""
+        self.collectors = []
+        self.forwarders = []
+        self.enrichment = None
 
-        **Ordering requirement**: Subscribers must register before publishers attempt
-        to send data to a topic.
+        if not self.config:
+            return
 
-        Creates a new queue for the subscriber if they haven't already subscribed to the topic(s).
-        If multiple topics are provided, they will share the same queue for this subscriber.
-        If the subscriber has already subscribed to any of the topics, returns the existing queue.
+        self.database_storage = SqliteStore(self.config.database_path, history_config=self.config.history)
 
-        Args:
-            topic: The topic name(s) to subscribe to. Can be a single ProcessingTopic or a list.
-            subscriber_id: Unique identifier for the subscriber.
-            queue_size: Maximum number of items the queue can hold (default: 100).
+        # Setup Collectors
+        if self.config.collector.suricata and self.config.collector.suricata.enable:
+            self.collectors.append(SuricataEveCollector(self.config.collector.suricata))
 
-        Returns:
-            The queue for receiving published data.
-        """
-        topics = [topic] if isinstance(topic, ProcessingTopic) else topic
-        logger.info(f"{subscriber_id} subscribing to {topics}")
+        if self.config.collector.nf_stream and self.config.collector.nf_stream.enable:
+            self.collectors.append(NFStreamCollector(self.config.collector.nf_stream))
 
-        # Check if already subscribed to ANY topic and reuse that queue if so
-        existing_queue = None
-        if self.subscribers[subscriber_id]:
-            existing_queue = next(iter(self.subscribers[subscriber_id].values()))
+        # Setup Enrichment
+        if self.config.enrichment:
+            self.enrichment = Enrich(self.config.enrichment)
 
-        if existing_queue:
-            for t in topics:
-                if t not in self.subscribers[subscriber_id]:
-                    self.subscribers[subscriber_id][t] = existing_queue
-                    self.queues[t].append(existing_queue)
-            return existing_queue
+        # Setup Forwarders
+        if self.config.forwarder.file and self.config.forwarder.file.enable:
+            self.forwarders.append(FileForwarder(self.config.forwarder.file))
 
-        q = Queue(maxsize=queue_size)
-        for t in topics:
-            self.subscribers[subscriber_id][t] = q
-            self.queues[t].append(q)
-        return q
+        if self.config.forwarder.webhooks:
+            for forwarder in self.config.forwarder.webhooks:
+                if forwarder.enable:
+                    self.forwarders.append(WebhookForwarder(forwarder))
 
-    def stop_processing(self):
-        """Signal all processing operations to stop.
+        if self.config.forwarder.discord:
+            for forwarder in self.config.forwarder.discord:
+                if forwarder.enable:
+                    self.forwarders.append(DiscordForwarder(forwarder))
 
-        Sets the stop processing event flag, which can be checked by workers
-        to gracefully terminate their operations.
-        """
-        self.stop_processing_event.set()
+    def start(self):
+        """Start all configured and enabled collectors, enrichers, and forwarders."""
+        logger.info("Starting Engine...")
 
-    def processing_stopped(self) -> bool:
-        """Check if processing has been stopped.
+        # Reset the stop event in case it was set during a previous run
+        self.processing_queue.stop_processing_event.clear()
 
-        Returns:
-            True if stop processing has been signaled, False otherwise.
-        """
-        return self.stop_processing_event.is_set()
+        self.sink.start()
+        self.database_storage.start()
 
-    def join(self):
-        """Block until all queues have processed their tasks.
+        # Start Enricher
+        if self.enrichment:
+            self.enrichment.start()
 
-        Waits for all subscriber queues across all topics to complete processing
-        their current items. This is useful for ensuring clean shutdown.
-        """
-        for _, queues in self.queues.items():
-            for q in queues:
-                q.join()
+        # Start Forwarders
+        for forwarder in self.forwarders:
+            forwarder.start()
+
+        # Start Collectors
+        for collector in self.collectors:
+            collector.start()
+
+        logger.info("Engine started successfully.")
+
+    def stop(self):
+        """Stop all processing by signaling the processing queue and waiting for threads."""
+        logger.info("Stopping Engine...")
+        self.processing_queue.stop_processing()
+
+        # Stop Collectors
+        for collector in self.collectors:
+            collector.join()
+
+        self.sink.stop()
+        self.processing_queue.queues.clear()
+        self.processing_queue.join()
+        logger.info("Engine stopped successfully.")
+
+    def reload(self):
+        """Reload configuration and restart all components."""
+        logger.info("Reloading Engine configuration...")
+        self.stop()
+        # In a real scenario, we might want to wait a bit or join threads
+        self.load_config()
+        self._setup_components()
+        self.start()
+        logger.info("Engine reloaded successfully.")

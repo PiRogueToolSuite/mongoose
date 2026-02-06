@@ -3,7 +3,7 @@ import time
 
 import pytest
 
-from mongoose.core.engine import ProcessingQueue, ProcessingTopic
+from mongoose.core.processing import ProcessingQueue, ProcessingTopic
 from mongoose.store.sqlite import SqliteStore
 from mongoose.models import NetworkAlert, NetworkAlertTable, NetworkFlow, NetworkFlowTable, NetworkDPI, NetworkDPITable
 

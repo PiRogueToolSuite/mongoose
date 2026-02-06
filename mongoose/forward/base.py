@@ -2,7 +2,7 @@ import logging
 import threading
 from typing import Any, Dict, List, Optional
 
-from mongoose.core.engine import ProcessingQueue, ProcessingTopic
+from mongoose.core.processing import ProcessingQueue, ProcessingTopic
 
 logger = logging.getLogger(__name__)
 
@@ -49,6 +49,7 @@ class BaseForwarder:
         self.topics_config = topics
         self.processing_queue = ProcessingQueue()
         self.thread: Optional[threading.Thread] = None
+        self.queue = None
 
     def start(self):
         """Start the forwarder worker thread.
@@ -58,6 +59,15 @@ class BaseForwarder:
         """
         if self.thread and self.thread.is_alive():
             return
+
+        topics = self._resolve_topics()
+        if not topics:
+            logger.error(f"No valid topics for {self.__class__.__name__} to subscribe to.")
+            return
+
+        # Unique subscriber ID to avoid collisions
+        subscriber_id = f"{self.__class__.__name__.lower()}_{id(self)}"
+        self.queue = self.processing_queue.subscribe(topics, subscriber_id=subscriber_id)
 
         self.thread = threading.Thread(target=self._run, daemon=True)
         self.thread.start()
@@ -69,24 +79,15 @@ class BaseForwarder:
         Continuously polls the `ProcessingQueue` for new data from subscribed
         topics. Terminates gracefully when the system-wide stop signal is received.
         """
-        topics = self._resolve_topics()
-        if not topics:
-            logger.error(f"No valid topics for {self.__class__.__name__} to subscribe to.")
-            return
-
-        # Unique subscriber ID to avoid collisions
-        subscriber_id = f"{self.__class__.__name__.lower()}_{id(self)}"
-        queue = self.processing_queue.subscribe(topics, subscriber_id=subscriber_id)
-
         while not self.processing_queue.processing_stopped():
             try:
-                data = queue.get(timeout=1.0)
+                data = self.queue.get(timeout=1.0)
                 if data is None:
-                    queue.task_done()
+                    self.queue.task_done()
                     continue
 
                 self.forward(data)
-                queue.task_done()
+                self.queue.task_done()
             except Exception as e:
                 import queue as q
 

@@ -139,31 +139,23 @@ class WebhookForwarder(BaseForwarder):
 
         Overrides BaseForwarder._run to support different forwarding modes.
         """
-        topics = self._resolve_topics()
-        if not topics:
-            logger.error(f"No valid topics for {self.__class__.__name__} to subscribe to.")
-            return
-
-        subscriber_id = f"{self.__class__.__name__.lower()}_{id(self)}"
-        queue = self.processing_queue.subscribe(topics, subscriber_id=subscriber_id)
-
         last_periodic_send = time.time()
 
         while not self.processing_queue.processing_stopped():
             try:
                 if self.config.mode == "immediate":
-                    data = queue.get(timeout=1.0)
+                    data = self.queue.get(timeout=1.0)
                     if data is not None:
                         self.forward(data)
-                        queue.task_done()
+                        self.queue.task_done()
                 elif self.config.mode == "bulk":
                     try:
-                        data = queue.get(timeout=1.0)
+                        data = self.queue.get(timeout=1.0)
                         if data is not None:
                             self._buffer.append(data)
                             if len(self._buffer) >= self.config.bulk_size:
                                 self._flush_buffer()
-                            queue.task_done()
+                            self.queue.task_done()
                     except (Exception,):  # timeout
                         if self._buffer:
                             self._flush_buffer()
@@ -172,10 +164,10 @@ class WebhookForwarder(BaseForwarder):
                     # Collect data from queue
                     try:
                         while len(self._buffer) < self.config.periodic_rate * 2:  # Limit buffer growth
-                            data = queue.get_nowait()
+                            data = self.queue.get_nowait()
                             if data is not None:
                                 self._buffer.append(data)
-                                queue.task_done()
+                                self.queue.task_done()
                     except (Exception,):  # empty queue
                         pass
 
@@ -289,3 +281,7 @@ class WebhookForwarder(BaseForwarder):
                 f"Failed to forward data to {self.config.url} after {self.config.retry_count + 1} attempts: {exception}"
             )
         return False
+
+
+# Discord-specific forwarder implementation moved to `mongoose.forward.discord`.
+# See mongoose/forward/discord.py for the DiscordFormatter and DiscordForwarder

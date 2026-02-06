@@ -26,6 +26,7 @@ dependencies = [
   "communityid==1.4",
   "nfstream==6.5.4",
   "pydantic==1.10.4",
+  "pyyaml>=6.0.3",
   "requests==2.28.1",
   "sqlalchemy==1.4.46",
 ]
@@ -66,6 +67,7 @@ docs = [
   "sphinx-sqlalchemy",
   "sphinx-toolbox",
   "sphinxcontrib-datatemplates",
+  "sphinxcontrib-mermaid",
 ]
 
 [tool.hatch.build.targets.sdist]
@@ -109,15 +111,23 @@ lint.fixable = [ "ALL" ]
 lint.unfixable = [  ]
 lint.dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 
+[tool.pytest]
+addopts = [ "-ra", "-q" ]
+testpaths = [
+  "tests",
+]
+
 [tool.coverage.run]
 omit = [
   "*test_*",
+  "trash/*",
   "docs/*",
 ]
 
 [tool.coverage.report]
 omit = [
   "*test_*",
+  "trash/*",
   "docs/*",
 ]
 

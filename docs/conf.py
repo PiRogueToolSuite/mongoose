@@ -20,7 +20,6 @@ autodoc_typehints_description_target = "documented_params"
 autoclass_content = "class"
 autodoc_member_order = "groupwise"
 
-
 extensions = [
     "colander",
     "myst_parser",
@@ -30,6 +29,7 @@ extensions = [
     "sphinx.ext.autodoc.typehints",
     "sphinx_copybutton",
     "sphinx_rtd_theme",
+    "sphinxcontrib.mermaid",
     "sphinx.ext.intersphinx",
     "sphinx.ext.viewcode",
     "sphinx.ext.autosummary",
@@ -69,6 +69,9 @@ napoleon_use_admonition_for_notes = True
 napoleon_use_admonition_for_references = True
 napoleon_preprocess_types = True
 napoleon_use_param = True
+
+mermaid_output_format = "png"
+mermaid_cmd = "uvx mmdc"
 
 exclude_patterns = []
 

@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import Dict, List, Optional, Union
 
 from pydantic import BaseModel, Field, HttpUrl, SecretStr, validator
@@ -34,7 +35,7 @@ class WebhookForwarderConfiguration(BaseModel):
     auth_header_name: str = Field(default="X-API-Key")
     """Name of the header if `auth_type` is 'header'."""
 
-    verify_ssl: bool = True
+    verify_ssl: bool = Field(default=True)
     """Whether to verify SSL certificates. Defaults to True."""
 
     retry_count: int = Field(default=3, ge=0)
@@ -46,8 +47,11 @@ class WebhookForwarderConfiguration(BaseModel):
     timeout: float = Field(default=10.0, gt=0)
     """Request timeout in seconds. Defaults to 10.0."""
 
-    topics: List[str] = Field(default_factory=lambda: ["network-dpi", "network-alert"])
-    """List of topics to forward. Defaults to ["network-dpi", "network-alert"]."""
+    enable: bool = Field(default=True)
+    """Enable the forwarder. Defaults to True."""
+
+    topics: List[str] = Field(default_factory=lambda: ["enriched-network-dpi", "enriched-network-alert"])
+    """List of topics to forward. Defaults to ["enriched-network-dpi", "enriched-network-alert"]."""
 
     # Forwarding modes
     mode: str = Field(default="immediate")  # immediate, bulk, periodic
@@ -88,26 +92,150 @@ class WebhookForwarderConfiguration(BaseModel):
 
 
 class FileForwarderConfiguration(BaseModel):
-    """Configuration for the File Forwarder.
-
-    This class defines the output directory and topics for dumping network
-    events into files. Each topic will have its own file in the specified
-    directory.
-    """
+    """Configuration for the File Forwarder."""
 
     output_dir: str = "output"
     """The directory where the files will be created."""
-    topics: List[str] = Field(default_factory=lambda: ["network-dpi", "network-alert", "network-flow"])
-    """List of topics to forward (e.g., ["network-dpi", "network-alert"])."""
+
+    topics: List[str] = Field(
+        default_factory=lambda: ["enriched-network-dpi", "enriched-network-alert", "enriched-network-flow"]
+    )
+    """List of topics to forward (e.g., ["enriched-network-dpi", "enriched-network-alert"])."""
+
     prefix: str = ""
     """Optional prefix for the filenames (e.g., "mongoose-")."""
 
+    enable: bool = Field(default=True)
+    """Enable the forwarder. Defaults to True."""
+
 
 class NFStreamConfiguration(BaseModel):
-    active_timeout: int = 2 * 60
+    """Configuration for the NFStream collector."""
+
+    active_timeout: int = Field(default=2 * 60, gt=0)
+    """Time in seconds before an active flow is considered expired. Defaults to 120 (2 minutes)."""
+
     interface: str
-    max_nflows: int = 0
+    """Network interface to capture from (required)."""
+
+    max_nflows: int = Field(default=0)
+    """Maximum number of flows to be captured. Defaults to 0 (unlimited)."""
+
+    enable: bool = Field(default=True)
+    """Enable the NFStream collector. Defaults to True."""
 
 
 class SuricataEveConfiguration(BaseModel):
-    socket_path: str = "/run/suricata.socket"
+    """A configuration for the Suricata EVE collector."""
+
+    socket_path: Path = Path("/run/suricata.socket")
+    """Specifies whether the Suricata EVE collector is disabled. Defaults to False."""
+
+    collect_alerts: bool = Field(default=True)
+    """Enable the alerts collector. Defaults to True."""
+
+    collect_netflow: bool = Field(default=False)
+    """Enable the netflow collector. Defaults to False."""
+
+    enable: bool = Field(default=True)
+    """Enable the Suricata EVE collector. Defaults to True."""
+
+
+class GeoIPConfiguration(BaseModel):
+    remote_service_url: str
+    """The URL of the remote service to be called."""
+
+    enable: bool = Field(default=True)
+    """Enable the GeoIP enrichment. Defaults to True."""
+
+
+class EnrichmentConfiguration(BaseModel):
+    geoip: Optional[GeoIPConfiguration] = None
+
+
+class DiscordForwarderConfiguration(WebhookForwarderConfiguration):
+    """Discord-specific forwarder configuration.
+
+    Inherits the generic webhook configuration and adds fields that are
+    specific to Discord webhooks: `username`, `avatar_url`, and
+    `allowed_mentions` to control mentions and avoid mass pings.
+    """
+
+    username: Optional[str] = None
+    """Override the displayed username for the webhook message."""
+
+    avatar_url: Optional[str] = None
+    """URL for the avatar to be shown with the webhook message."""
+
+    allowed_mentions: Dict[str, List[Union[str, int]]] = Field(default_factory=lambda: {"parse": []})
+    """Control which mentions are allowed by the webhook (see Discord docs).
+
+    Defaults to no parsing for safety (no @everyone/@here or role/user parsing).
+    """
+
+    @validator("allowed_mentions", pre=True, always=True)
+    def validate_allowed_mentions(cls, v):
+        # Ensure structure is at least a dict with a 'parse' list
+        if v is None:
+            return {"parse": []}
+        if not isinstance(v, dict):
+            raise ValueError("allowed_mentions must be a dict")
+        v.setdefault("parse", [])
+        return v
+
+
+class ForwarderConfiguration(BaseModel):
+    file: Optional[FileForwarderConfiguration] = None
+    webhooks: Optional[List[WebhookForwarderConfiguration]] = []
+    # Optional list of Discord forwarder configurations. Discord has a
+    # specific webhook format and extra options like username/avatar and
+    # allowed_mentions to prevent accidental mass pings.
+    discord: Optional[List[DiscordForwarderConfiguration]] = []
+
+
+class CollectorConfiguration(BaseModel):
+    suricata: Optional[SuricataEveConfiguration] = None
+    nf_stream: Optional[NFStreamConfiguration] = None
+
+
+class HistoryConfiguration(BaseModel):
+    """Configuration for history limiting in the database."""
+
+    max_records: Optional[int] = Field(default=None, ge=1)
+    """Maximum number of records to keep in each table."""
+
+    max_duration_days: Optional[int] = Field(default=None, ge=1)
+    """Maximum duration to keep records in days."""
+
+    enable: bool = Field(default=True)
+    """Enable history limiting. Defaults to True."""
+
+
+class CacheSeverityConfiguration(BaseModel):
+    """Configuration for the severity cache used for Suricata alerts."""
+
+    enable: bool = Field(default=True)
+    """Enable caching of severity values. Defaults to True."""
+
+    max_size: int = Field(default=1024, ge=1)
+    """Maximum number of entries to retain in the severity cache."""
+
+    ttl_seconds: Optional[float] = Field(default=None, gt=0)
+    """Optional TTL in seconds for severity entries. If omitted, entries do not expire by time."""
+
+
+class CacheConfiguration(BaseModel):
+    severity: Optional[CacheSeverityConfiguration] = Field(default_factory=CacheSeverityConfiguration)
+    """Top-level cache configuration. Currently only severity cache is supported."""
+
+
+class Configuration(BaseModel):
+    """Configuration for the Mongoose application."""
+
+    collector: CollectorConfiguration
+    enrichment: EnrichmentConfiguration
+    forwarder: ForwarderConfiguration
+    database_path: Path = Path("mongoose.db")
+    history: Optional[HistoryConfiguration] = Field(default_factory=HistoryConfiguration)
+    extra_configuration_dir: Path = Path("/var/lib/mongoose/")
+    cache: Optional[CacheConfiguration] = Field(default_factory=CacheConfiguration)

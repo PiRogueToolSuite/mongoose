@@ -1,7 +1,7 @@
-mongoose.models.base
+mongoose.core.processing
 ===========================
 
-.. automodule:: mongoose.models.base
+.. automodule:: mongoose.core.processing
    :members:
    :show-inheritance:
    :undoc-members:

@@ -6,7 +6,7 @@ import pytest
 import requests
 from pydantic import SecretStr
 
-from mongoose.core.engine import ProcessingQueue, ProcessingTopic
+from mongoose.core.processing import ProcessingQueue, ProcessingTopic
 from mongoose.forward.webhook import WebhookForwarder, WebhookFormatter
 from mongoose.models.configuration import WebhookForwarderConfiguration
 from mongoose.models import NetworkAlert

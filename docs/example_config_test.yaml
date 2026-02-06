@@ -1,0 +1,39 @@
+collector:
+  suricata:
+    socket_path: /run/suricata.socket
+    collect_alerts: true
+    collect_netflow: false
+    enable: true
+  nf_stream:
+    interface: eth0
+    active_timeout: 120
+    max_nflows: 0
+    enable: true
+enrichment:
+  geoip:
+    remote_service_url: https://geoip.example/api/lookup
+    enable: true
+forwarder:
+  file:
+    output_dir: /var/log/mongoose
+    topics: ["enriched-network-dpi"]
+    prefix: mongoose-
+    enable: true
+  webhooks:
+    - url: https://example.org/hook
+      headers:
+        X-API-Key: secret
+      auth_type: header
+      auth_token: s3cr3t
+      auth_header_name: X-API-Key
+      verify_ssl: true
+      retry_count: 3
+      retry_delay: 5.0
+      timeout: 10.0
+      enable: true
+database_path: /var/lib/mongoose/mongoose.db
+extra_configuration_dir: /var/lib/mongoose/
+cache:
+  severity:
+    enable: true
+    max_size: 1024

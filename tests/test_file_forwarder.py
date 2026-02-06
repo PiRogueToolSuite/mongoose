@@ -5,7 +5,7 @@ import time
 
 import pytest
 
-from mongoose.core.engine import ProcessingQueue, ProcessingTopic
+from mongoose.core.processing import ProcessingQueue, ProcessingTopic
 from mongoose.forward.file import FileForwarder, FileFormatter
 from mongoose.models.configuration import FileForwarderConfiguration
 from mongoose.models import NetworkAlert, NetworkFlow

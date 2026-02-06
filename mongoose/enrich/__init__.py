@@ -1,12 +1,13 @@
-from abc import ABC, abstractmethod
-from typing import Any
+from .community_id import CommunityIDEnrichment
+from .direction import DirectionEnrichment
+from .geoip import GeoIP
+from .hostname import HostnameEnrichment
+from .base import Enrich
 
-
-class AbstractEnricher(ABC):
-    @abstractmethod
-    def enrich_alert(self, alert_data: Any) -> None:
-        pass
-
-    @abstractmethod
-    def enrich_dpi(self, dpi_data: Any) -> None:
-        pass
+__all__ = [
+    "Enrich",
+    "CommunityIDEnrichment",
+    "DirectionEnrichment",
+    "GeoIP",
+    "HostnameEnrichment",
+]

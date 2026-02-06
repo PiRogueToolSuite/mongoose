@@ -1,23 +1,34 @@
 import datetime
+import logging
 from threading import Thread
 
 from nfstream import NFStreamer
 
-from mongoose.core.engine import ProcessingQueue, ProcessingTopic
+from mongoose.core.cache import SeverityCache
+from mongoose.core.processing import ProcessingQueue, ProcessingTopic
 from mongoose.models.configuration import NFStreamConfiguration
 from mongoose.models.network_dpi import NetworkDPI
 from mongoose.utils.protocols import PROTOCOL_NUMBERS
 
 
+logger = logging.getLogger(__name__)
+
+
 class NFStreamCollector(Thread):
     """
-    Collector that reads network flows using NFStreamer in a separate thread.
+    Collector that reads network flows using NFStreamer in a
+    separate thread.
 
-    This class extends `threading.Thread` to run flow collection concurrently.
-    It instantiates an `NFStreamer` using values from `NFStreamConfiguration`,
-    converts each captured NFStreamer flow into the project's `NetworkFlow`
-    model, resolves a human-readable protocol name via `PROTOCOL_NUMBERS`,
-    and publishes the flow to a `ProcessingQueue`.
+    This class extends `threading.Thread` to run flow collection
+    concurrently. It instantiates an `NFStreamer` using values from
+    `NFStreamConfiguration`, converts each captured NFStreamer flow
+    into the project's `NetworkDPI` model, resolves a human-readable
+    protocol name via `PROTOCOL_NUMBERS`, and publishes the flow to
+    a `ProcessingQueue`.
+
+    The collector attempts to be robust: it logs exceptions,
+    performs safe conversions for protocol and timestamps, and
+    closes the streamer resource (if supported) on shutdown.
     """
 
     def __init__(self, configuration: NFStreamConfiguration):
@@ -25,97 +36,150 @@ class NFStreamCollector(Thread):
         Initialize the collector with the provided configuration.
 
         Args:
-            configuration: An `NFStreamConfiguration` instance containing
-                `interface` and `active_timeout` values.
-
-        The initialization creates a dedicated `ProcessingQueue` and sets
-        `disabled` to False so collection can start when `start()` is called
-        on the thread.
+            configuration: An `NFStreamConfiguration` instance
+                containing `interface`, `active_timeout`, and
+                `max_nflows` values.
         """
         super().__init__()
+        # ensure this thread will not prevent process exit if left
+        # running accidentally
+        self.daemon = True
+        self.severity_cache = SeverityCache()
+
         self.configuration = configuration
         """Configuration object providing `interface` and `active_timeout` used to configure `NFStreamer`."""
+
         self.processing_queue = ProcessingQueue()
-        """Queue used to publish `NetworkFlow` objects for downstream processing."""
-        self.disabled = False
-        """Flag used to disable collection early (checked in `collect`)."""
+        """Queue used to publish `NetworkDPI` objects for downstream processing."""
+
         self.topic = ProcessingTopic.NETWORK_DPI
 
     @staticmethod
-    def resolve_protocol(flow: NetworkDPI):
+    def resolve_protocol(flow: NetworkDPI) -> None:
         """
-        Resolve and set the protocol keyword on a `NetworkFlow` based on
+        Resolve and set the protocol keyword on a `NetworkDPI` based on
         the numeric protocol value.
 
         Args:
-            flow: `NetworkFlow` instance with a `protocol_number` attribute.
+            flow: `NetworkDPI` instance with a `protocol_number`
+                attribute.
 
         Behavior:
             - Looks up `protocol_number` in `PROTOCOL_NUMBERS`.
-            - If found, sets `flow.protocol` to the mapping's `"keyword"`.
-            - If not found, leaves `flow.protocol` unchanged (may be None).
+            - If found, sets `flow.protocol` to the mapping's "keyword".
+            - If not found or `protocol_number` is invalid, leaves `flow.protocol` unchanged (may be None).
         """
-        protocol_number = flow.protocol_number
-        protocol_details = PROTOCOL_NUMBERS.get(protocol_number, None)
+        protocol_number = getattr(flow, "protocol_number", None)
+        try:
+            # ignore None or negative sentinel values
+            if protocol_number is None:
+                return
+            if isinstance(protocol_number, int) and protocol_number < 0:
+                return
+            # ensure it's an int (some streamers might expose as str)
+            protocol_key = int(protocol_number)
+        except (TypeError, ValueError):
+            return
+
+        protocol_details = PROTOCOL_NUMBERS.get(protocol_key)
         if protocol_details:
             flow.protocol = protocol_details.get("keyword")
 
     def run(self):
         """
-        Thread entrypoint.
-
-        Calls `collect()` so this object can be started via `thread.start()`.
+        Thread entrypoint: delegate to `collect()` so this object
+        can be started via `thread.start()`.
         """
         self.collect()
 
-    def collect(self):
+    def collect(self) -> None:
         """
         Perform flow collection using NFStreamer.
 
         This method:
-            - Checks the `disabled` flag and returns immediately if set.
-            - Creates an `NFStreamer` configured with `interface` and
-              `active_timeout` from `configuration`.
-            - Iterates flows emitted by `NFStreamer`, converts them to
-              `NetworkFlow` objects (excluding the `id` field), resolves
-              the protocol keyword, and publishes each flow to
-              `processing_queue` under `ProcessingTopic.NETWORK_FLOW` topic.
-            - Stops if `processing_queue.processing_stopped()` returns True.
+            - Creates an `NFStreamer` configured with `interface`,
+              `active_timeout`, and `max_nflows` from `configuration`.
+            - Iterates flows emitted by `NFStreamer`, converts them
+              to `NetworkDPI` objects (excluding the `id` field),
+              resolves the protocol keyword, and publishes each flow
+              to `processing_queue` under `ProcessingTopic.NETWORK_DPI`.
+            - Stops if `processing_queue.processing_stopped()` returns
+              True.
 
-        Edge cases and behavior notes:
-            - If `disabled` is set while iteration is ongoing, the method
-              will not interrupt the current NFStreamer iterator directly;
-              setting `disabled` prevents starting a new collection and can
-              be used to guard re-entry.
+        The implementation guards against malformed input and
+        ensures the streamer is closed if it implements a close/stop
+        API.
         """
-        if self.disabled:
+        try:
+            streamer = NFStreamer(
+                source=self.configuration.interface,
+                active_timeout=self.configuration.active_timeout,
+                idle_timeout=2,
+                max_nflows=self.configuration.max_nflows,
+            )
+        except (Exception,):
+            logger.exception("Failed to create NFStreamer, stopping here")
             return
-        streamer = NFStreamer(
-            source=self.configuration.interface,
-            active_timeout=self.configuration.active_timeout,
-            max_nflows=self.configuration.max_nflows,
-        )
-        for _flow in streamer:
-            # Build NetworkFlow from NFStreamer flow attributes, excluding 'id'
-            flow = NetworkDPI(**{k: getattr(_flow, k) for k in _flow.keys() if k != "id"})
-            # Convert times
-            flow.time = datetime.datetime.fromtimestamp(_flow.bidirectional_first_seen_ms / 1000.0).astimezone()
-            flow.timestamp = flow.time.timestamp()
-            # Resolve human-readable protocol name if available
-            self.resolve_protocol(flow)
-            # Publish the processed flow for downstream handling
-            self.processing_queue.publish(self.topic, flow)
 
-            # Allow an external stop request via the processing queue
-            if self.processing_queue.processing_stopped():
-                break
+        try:
+            for _flow in streamer:
+                # Build NetworkDPI from NFStreamer flow attributes,
+                # excluding 'id'. Use getattr to avoid KeyError-like
+                # issues if attributes are missing.
+                try:
+                    flow = NetworkDPI(**{k: getattr(_flow, k) for k in _flow.keys() if k != "id"})
+                except (Exception,):
+                    logger.exception("Failed to construct NetworkDPI from flow; skipping this flow")
+                    # skip this flow and continue
+                    continue
 
-    def disable(self):
-        """
-        Disable the collector to prevent further collection.
+                # Safe protocol number handling: convert to int if
+                # possible, otherwise set sentinel -1 (invalid)
+                try:
+                    proto_val = getattr(_flow, "protocol", None)
+                    flow.protocol_number = int(proto_val) if proto_val is not None else -1
+                except (TypeError, ValueError):
+                    flow.protocol_number = -1
 
-        Sets the `disabled` flag so subsequent calls to `collect()` will
-        return immediately. Does not forcibly terminate an ongoing
-        iteration over an active `NFStreamer`.
-        """
-        self.disabled = True
+                # Safe time conversion: some flows may lack the field or
+                # contain invalid values. Use epoch (0) as fallback.
+                ms = getattr(_flow, "bidirectional_first_seen_ms", None)
+                try:
+                    ts = float(ms) / 1000.0
+                    flow.time = datetime.datetime.fromtimestamp(ts).astimezone()
+                    flow.timestamp = flow.time.timestamp()
+                except (Exception,):
+                    logger.debug("Invalid or missing timestamp on flow; using epoch fallback")
+                    flow.time = datetime.datetime.fromtimestamp(0).astimezone()
+                    flow.timestamp = 0.0
+
+                # Resolve the human-readable protocol name if available
+                try:
+                    self.resolve_protocol(flow)
+                except (Exception,):
+                    # resolve_protocol is defensive, but guard anyway
+                    logger.exception("Protocol resolution failed for flow")
+
+                # Publish the processed flow for downstream handling
+                try:
+                    self.processing_queue.publish(self.topic, flow)
+                except (Exception,):
+                    logger.exception("Failed to publish flow to processing queue")
+
+                # Allow an external stop request via the processing queue
+                if self.processing_queue.processing_stopped():
+                    logger.info("Processing queue signaled stop; stopping collector loop")
+                    break
+        except (Exception,):
+            logger.exception("Unexpected error while iterating NFStreamer")
+        finally:
+            # Ensure streamer resources are cleaned up if possible
+            if streamer is not None:
+                for method in ("close", "stop", "shutdown"):
+                    if hasattr(streamer, method):
+                        try:
+                            getattr(streamer, method)()
+                            logger.debug("Called %s() on streamer during cleanup", method)
+                        except (Exception,):
+                            logger.exception("Error while calling %s() on streamer during cleanup", method)
+                        break

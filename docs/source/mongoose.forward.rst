@@ -6,4 +6,5 @@ mongoose.forward
 
    mongoose.forward.base
    mongoose.forward.file
+   mongoose.forward.discord
    mongoose.forward.webhook

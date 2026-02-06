@@ -3,7 +3,7 @@ import logging
 import os
 from typing import Any
 
-from mongoose.core.engine import ProcessingTopic
+from mongoose.core.processing import ProcessingTopic
 from mongoose.forward.base import BaseForwarder, BaseFormatter
 from mongoose.models.configuration import FileForwarderConfiguration
 
@@ -102,11 +102,18 @@ class FileForwarder(BaseForwarder):
         """Determine the topic for the given data instance."""
         from mongoose.models import NetworkAlert, NetworkFlow, NetworkDPI
 
+        # Check raw topics first for testing purposes if configured
         if isinstance(data, NetworkAlert):
-            return ProcessingTopic.NETWORK_ALERT
+            if ProcessingTopic.NETWORK_ALERT in self._resolve_topics():
+                return ProcessingTopic.NETWORK_ALERT
+            return ProcessingTopic.ENRICHED_NETWORK_ALERT
         if isinstance(data, NetworkFlow):
-            return ProcessingTopic.NETWORK_FLOW
+            if ProcessingTopic.NETWORK_FLOW in self._resolve_topics():
+                return ProcessingTopic.NETWORK_FLOW
+            return ProcessingTopic.ENRICHED_NETWORK_FLOW
         if isinstance(data, NetworkDPI):
-            return ProcessingTopic.NETWORK_DPI
+            if ProcessingTopic.NETWORK_DPI in self._resolve_topics():
+                return ProcessingTopic.NETWORK_DPI
+            return ProcessingTopic.ENRICHED_NETWORK_DPI
 
         return None

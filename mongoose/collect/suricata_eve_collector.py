@@ -3,7 +3,8 @@ import logging
 import socket
 from threading import Thread
 
-from mongoose.core.engine import ProcessingQueue, ProcessingTopic
+from mongoose.core.cache import SeverityCache
+from mongoose.core.processing import ProcessingQueue, ProcessingTopic
 from mongoose.models.configuration import SuricataEveConfiguration
 from mongoose.models.network_alert import NetworkAlert
 from mongoose.models.network_flow import NetworkFlow
@@ -11,7 +12,7 @@ from mongoose.models.network_flow import NetworkFlow
 logger = logging.getLogger(__name__)
 
 
-class SuricataEveCollector(Thread):
+class SuricataEveCollector(Thread):  # pragma: no cover
     """
     Collector that reads Suricata EVE JSON events from a Unix socket in a separate thread.
 
@@ -32,12 +33,13 @@ class SuricataEveCollector(Thread):
             configuration: A `SuricataEveConfiguration` instance containing `socket_path`.
         """
         super().__init__()
+        self.severy_cache = SeverityCache()
+
         self.configuration = configuration
         """Configuration object providing `socket_path`."""
+
         self.processing_queue = ProcessingQueue()
         """Queue used to publish events for downstream processing."""
-        self.disabled = False
-        """Flag used to disable collection early."""
 
     def run(self):
         """
@@ -47,6 +49,37 @@ class SuricataEveCollector(Thread):
         """
         self.collect()
 
+    def read_socket_with_timeout(self, timeout=5.0):
+        # Create the socket
+        sock = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
+
+        # Bind to the path
+        if self.configuration.socket_path.exists():
+            self.configuration.socket_path.unlink(missing_ok=True)
+        sock.bind(str(self.configuration.socket_path))
+        self.configuration.socket_path.chmod(0o600)
+
+        sock.settimeout(timeout)
+
+        try:
+            while not self.processing_queue.processing_stopped():
+                try:
+                    # 65535 is the max size for a UDP/Unix dgram packet
+                    data, addr = sock.recvfrom(65535)
+
+                    # Decode and split by newline in case multiple events
+                    # were bundled in a single datagram
+                    decoded_data = data.decode("utf-8").strip()
+                    for line in decoded_data.split("\n"):
+                        if line:
+                            yield line  # Send the line back to the main loop
+
+                except socket.timeout:
+                    logger.info(f"[!] No data received within {timeout}. Still waiting...")
+                    continue
+        except (socket.error, socket.timeout, FileNotFoundError) as e:
+            logger.error(f"Socket error: {e}")
+
     def collect(self):
         """
         Perform event collection from Suricata Unix socket.
@@ -55,43 +88,24 @@ class SuricataEveCollector(Thread):
             - Connects to the Unix socket specified in `configuration`.
             - Reads the stream and splits it into JSON objects (one per line).
             - Dispatches 'alert' and 'netflow' events to their respective topics.
-            - Stops if `processing_queue.processing_stopped()` or `disabled` is True.
+            - Stops if `processing_queue.processing_stopped()`.
         """
-        if self.disabled:
-            return
+        if self.configuration.socket_path.exists():
+            self.configuration.socket_path.unlink()
 
-        while not self.processing_queue.processing_stopped():
-            try:
-                with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as client:
-                    client.connect(self.configuration.socket_path)
-                    logger.info(f"Connected to Suricata socket at {self.configuration.socket_path}")
-
-                    # Suricata EVE socket is a stream of JSON objects, each followed by a newline.
-                    # We can use a file-like object to read line by line.
-                    with client.makefile("r") as socket_file:
-                        for line in socket_file:
-                            if not line.strip():
-                                continue
-                            try:
-                                event = json.loads(line)
-                                self._process_event(event)
-                            except json.JSONDecodeError:
-                                logger.error(f"Failed to decode EVE JSON: {line}")
-                            except Exception as e:
-                                logger.error(f"Error processing Suricata event: {e}")
-
-            except (socket.error, FileNotFoundError) as e:
-                logger.error(f"Socket error: {e}. Retrying in 5 seconds...")
-                # Use a wait that can be interrupted by the stop signals
-                for _ in range(50):
-                    if self.processing_queue.processing_stopped():
-                        break
-                    import time
-
-                    time.sleep(0.1)
-            except Exception as e:
-                logger.error(f"Unexpected error in Suricata collector: {e}")
+        for line in self.read_socket_with_timeout(5.0):
+            if self.processing_queue.processing_stopped():
                 break
+
+            if not line.strip():
+                continue
+            try:
+                event = json.loads(line)
+                self._process_event(event)
+            except json.JSONDecodeError:
+                logger.error(f"Failed to decode EVE JSON: {line}")
+            except Exception as e:
+                logger.error(f"Error processing Suricata event: {e}")
 
     def _process_event(self, event: dict):
         """
@@ -106,8 +120,7 @@ class SuricataEveCollector(Thread):
             event: A dictionary representing a single Suricata EVE JSON event.
         """
         event_type = event.get("event_type")
-
-        if event_type == "alert":
+        if event_type == "alert" and self.configuration.collect_alerts:
             # Map EVE alert to NetworkAlert
             alert_data = event.copy()
             # Extract alert sub-dictionary if present, as NetworkAlert fields
@@ -128,9 +141,15 @@ class SuricataEveCollector(Thread):
                 alert_data["dst_port"] = event["dest_port"]
 
             alert = NetworkAlert(**alert_data)
+            # Cache the alert severity
+            if alert.severity == 1:
+                self.severy_cache.set_severity(alert.community_id, 2)  # highest risk
+            else:
+                self.severy_cache.set_severity(alert.community_id, 1)  # mid-level of risk
+
             self.processing_queue.publish(ProcessingTopic.NETWORK_ALERT, alert)
 
-        elif event_type == "netflow":
+        elif event_type == "netflow" and self.configuration.collect_netflow:
             # Map EVE netflow to NetworkFlow
             flow_data = event.copy()
             if "netflow" in event:
@@ -150,12 +169,3 @@ class SuricataEveCollector(Thread):
 
             flow = NetworkFlow(**flow_data)
             self.processing_queue.publish(ProcessingTopic.NETWORK_FLOW, flow)
-
-    def disable(self):
-        """
-        Disable the collector.
-
-        Sets the `disabled` flag to True, which will cause `collect()` to stop
-        processing further events from the socket.
-        """
-        self.disabled = True

@@ -1,11 +1,14 @@
 import logging
 import threading
+from pathlib import Path
 from typing import Dict, Type
 
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, Table
 from sqlalchemy.orm import sessionmaker
 
-from mongoose.core.engine import ProcessingQueue, ProcessingTopic
+from mongoose.store.history import SqliteHistoryManager
+from mongoose.models.configuration import HistoryConfiguration
+from mongoose.core.processing import ProcessingQueue, ProcessingTopic
 from mongoose.models import (
     Base,
     NetworkAlert,
@@ -25,19 +28,21 @@ class SqliteStore:
     Subscribes to all topics and persists data using SQLAlchemy models.
     """
 
-    def __init__(self, db_path: str = "mongoose.db"):
+    def __init__(self, db_path: Path = Path("mongoose.db"), history_config: HistoryConfiguration = None):
         """Initialize the SqliteStore.
 
         Args:
             db_path: Path to the SQLite database file. Defaults to "mongoose.db".
+            history_config: Configuration for history limiting.
         """
         self.engine = create_engine(f"sqlite:///{db_path}")
         self.Session = sessionmaker(bind=self.engine)
         self.processing_queue = ProcessingQueue()
         self.thread = None
+        self.history_manager = SqliteHistoryManager(self.Session, history_config or HistoryConfiguration())
 
         # Map topics to their respective Pydantic and SQLAlchemy models
-        self.model_map: Dict[ProcessingTopic, Dict[str, Type]] = {
+        self.model_map: Dict[ProcessingTopic, Dict[str, Type[Table]]] = {
             ProcessingTopic.NETWORK_ALERT: {
                 "pydantic": NetworkAlert,
                 "table": NetworkAlertTable,
@@ -50,8 +55,20 @@ class SqliteStore:
                 "pydantic": NetworkDPI,
                 "table": NetworkDPITable,
             },
+            ProcessingTopic.ENRICHED_NETWORK_ALERT: {
+                "pydantic": NetworkAlert,
+                "table": NetworkAlertTable,
+            },
+            ProcessingTopic.ENRICHED_NETWORK_FLOW: {
+                "pydantic": NetworkFlow,
+                "table": NetworkFlowTable,
+            },
+            ProcessingTopic.ENRICHED_NETWORK_DPI: {
+                "pydantic": NetworkDPI,
+                "table": NetworkDPITable,
+            },
         }
-
+        self.queue = None
         self._create_tables()
 
     def _create_tables(self):
@@ -68,6 +85,10 @@ class SqliteStore:
         if self.thread and self.thread.is_alive():
             return
 
+        # Subscribe early to ensure topics exist before start() returns
+        topics = list(self.model_map.keys())
+        self.queue = self.processing_queue.subscribe(topics, subscriber_id="sqlite_store")
+
         self.thread = threading.Thread(target=self._run, daemon=True)
         self.thread.start()
         logger.info("SqliteStore worker thread started")
@@ -75,25 +96,21 @@ class SqliteStore:
     def _run(self):
         """Main worker loop to process messages from all topics.
 
-        Subscribes to all topics defined in `model_map` and continuously polls the
-        queue for new data. Each received item is passed to `_save_data` for persistence.
+        Continuously polls the queue for new data. Each received item is passed
+        to `_save_data` for persistence.
         The loop terminates when `processing_stopped()` returns True.
         """
-        topics = list(self.model_map.keys())
-        queue = self.processing_queue.subscribe(topics, subscriber_id="sqlite_store")
-
         while not self.processing_queue.processing_stopped():
             try:
                 # Use a timeout to occasionally check if processing has stopped
-                data = queue.get(timeout=1.0)
+                data = self.queue.get(timeout=1.0)
                 if data is None:
-                    queue.task_done()
+                    self.queue.task_done()
                     continue
 
                 self._save_data(data)
-                queue.task_done()
+                self.queue.task_done()
             except Exception as e:
-                # queue.get timeout raises queue.Empty, but we can just continue
                 import queue as q
 
                 if isinstance(e, q.Empty):
@@ -117,7 +134,7 @@ class SqliteStore:
         data_dict = self._model_to_dict(data)
         self._persist_record(target_models["table"], data_dict)
 
-    def _get_target_models(self, data: any) -> Dict[str, Type] | None:
+    def _get_target_models(self, data: any) -> Dict[str, Type[Table]] | None:
         """Determine topic and models based on data type.
 
         Args:
@@ -160,7 +177,7 @@ class SqliteStore:
 
         return data_dict
 
-    def _persist_record(self, table_class: Type, data_dict: dict):
+    def _persist_record(self, table_class: Type[Table], data_dict: dict):
         """Persist a record to the database.
 
         Args:
@@ -170,7 +187,18 @@ class SqliteStore:
         try:
             with self.Session() as session:
                 record = table_class(**data_dict)
-                session.add(record)
-                session.commit()
+                instance = session.query(table_class).filter_by(id=data_dict["id"]).first()
+                if instance:
+                    # Update
+                    for k, v in data_dict.items():
+                        setattr(instance, k, v)
+                    session.commit()
+                else:
+                    # Create
+                    session.add(record)
+                    session.commit()
+
+            # After successful persistence, trigger cleanup
+            self.history_manager.cleanup(table_class)
         except Exception as e:
             logger.error(f"Failed to save data to SQLite: {e}")

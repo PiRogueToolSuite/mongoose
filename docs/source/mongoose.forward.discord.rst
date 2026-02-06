@@ -1,7 +1,7 @@
-mongoose.utils.protocols
+mongoose.forward.discord
 ===============================
 
-.. automodule:: mongoose.utils.protocols
+.. automodule:: mongoose.forward.discord
    :members:
    :show-inheritance:
    :undoc-members:

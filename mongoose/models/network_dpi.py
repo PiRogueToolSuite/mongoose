@@ -4,18 +4,20 @@ from datetime import datetime
 from uuid import uuid4
 
 import sqlalchemy as sa
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, Field
 
 from mongoose.models.base import Base
 
 
 class NetworkDPI(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
+    class Config:
+        from_attributes = True
 
     id: str = Field(default_factory=lambda: uuid4().hex, frozen=True)
     time: datetime = Field(default_factory=datetime.now)
     timestamp: float = Field(default_factory=lambda: int(time.time()))
     community_id: str = ""
+    risk: int = 0  # 0: normal, 1: suspicious, 2: critical
     bidirectional_duration_ms: int = 0
     bidirectional_bytes: int = 0
     bidirectional_packets: int = 0
@@ -35,6 +37,8 @@ class NetworkDPI(BaseModel):
     requested_server_name: str = "unknown"
     client_fingerprint: str = "unknown"
     server_fingerprint: str = "unknown"
+    enrichment: dict = Field(default_factory=dict)
+    extra: dict = Field(default_factory=dict)
 
     @property
     def community_id_b64(self) -> str:
@@ -47,18 +51,19 @@ class NetworkDPITable(Base):
     id = sa.Column(sa.String, primary_key=True)
     time = sa.Column(sa.DateTime)
     timestamp = sa.Column(sa.Float)
-    community_id = sa.Column(sa.String)
+    community_id = sa.Column(sa.String, index=True)
     community_id_b64 = sa.Column(sa.String)
+    risk = sa.Column(sa.Integer)
     bidirectional_duration_ms = sa.Column(sa.Integer)
     bidirectional_bytes = sa.Column(sa.Integer)
     bidirectional_packets = sa.Column(sa.Integer)
     protocol = sa.Column(sa.String)
     protocol_number = sa.Column(sa.Integer)
     ip_version = sa.Column(sa.Integer)
-    src_ip = sa.Column(sa.String)
+    src_ip = sa.Column(sa.String, index=True)
     src_mac = sa.Column(sa.String)
     src_port = sa.Column(sa.Integer)
-    dst_ip = sa.Column(sa.String)
+    dst_ip = sa.Column(sa.String, index=True)
     dst_mac = sa.Column(sa.String)
     dst_port = sa.Column(sa.Integer)
     dst2src_bytes = sa.Column(sa.Integer)
@@ -68,3 +73,5 @@ class NetworkDPITable(Base):
     requested_server_name = sa.Column(sa.String)
     client_fingerprint = sa.Column(sa.String)
     server_fingerprint = sa.Column(sa.String)
+    enrichment = sa.Column(sa.JSON)
+    extra = sa.Column(sa.JSON)
