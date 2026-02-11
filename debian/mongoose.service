@@ -1,0 +1,16 @@
+[Unit]
+Description=Collect, enrich and store network events
+Wants=networking.service
+
+[Service]
+ExecStart=/usr/sbin/mongoosed -c /etc/mongoose/mongoose.yaml
+Environment=PYTHONUNBUFFERED=1
+Restart=on-failure
+RestartSec=2
+Type=notify
+KillSignal=SIGTERM
+TimeoutStopSec=30
+KillMode=control-group
+
+[Install]
+WantedBy=default.target

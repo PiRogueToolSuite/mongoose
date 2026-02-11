@@ -1,0 +1,5 @@
+mongoose (1.0.0) bookworm; urgency=medium
+
+  * Initial release
+
+ -- U+039b <hello@pts-project.org>  Fri, 6 Feb 2026 09:55:52 +0100

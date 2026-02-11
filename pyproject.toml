@@ -3,8 +3,11 @@ build-backend = "hatchling.build"
 
 requires = [ "hatchling", "uv-dynamic-versioning" ]
 
+[tool.hatch.build.targets.wheel]
+packages = ["mongoose"]
+
 [project]
-name = "mongoose"
+name = "pts-mongoose"
 description = "Helpers to collect, enrich and store Suricata events and network flows."
 readme = "README.md"
 license = "GPL-3.0-or-later"

@@ -13,20 +13,27 @@ import sys
 import threading
 from pathlib import Path
 from typing import Optional
+from mongoose.core.engine import Engine
 
+
+# Systemd
 try:
-    # systemd's python library exposes notify() which we can call
-    # when running under systemd to report readiness and stopping.
     from systemd.daemon import notify  # type: ignore
 except (Exception,):
 
     def notify(message: str) -> None:  # type: ignore
-        """Fallback notify no-op when systemd libraries are unavailable."""
-        # No-op when systemd notification isn't available.
         return
 
 
-from mongoose.core.engine import Engine
+# PiRogue
+pirogue_isolated_iface: Optional[str] = None
+try:
+    from pirogue_admin_client import PirogueAdminClientAdapter
+
+    admin_client = PirogueAdminClientAdapter()
+    pirogue_isolated_iface = admin_client.get_configuration().get("ISOLATED_INTERFACE")
+except (Exception,):
+    pass
 
 
 def parse_args(argv: Optional[list[str]] = None) -> argparse.Namespace:
@@ -94,6 +101,8 @@ def main(argv: Optional[list[str]] = None) -> int:
     if not config_path.exists():
         log.warning("Configuration file %s does not exist; attempting to continue", config_path)
         return 1
+
+    network_interface = args.interface or pirogue_isolated_iface or None
 
     try:
         engine = Engine(str(config_path), args.interface)
