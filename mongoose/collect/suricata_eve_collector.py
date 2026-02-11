@@ -33,6 +33,7 @@ class SuricataEveCollector(Thread):  # pragma: no cover
             configuration: A `SuricataEveConfiguration` instance containing `socket_path`.
         """
         super().__init__()
+        self.daemon = True
         self.severy_cache = SeverityCache()
 
         self.configuration = configuration
@@ -57,7 +58,6 @@ class SuricataEveCollector(Thread):  # pragma: no cover
         if self.configuration.socket_path.exists():
             self.configuration.socket_path.unlink(missing_ok=True)
         sock.bind(str(self.configuration.socket_path))
-        self.configuration.socket_path.chmod(0o600)
 
         sock.settimeout(timeout)
 
@@ -106,6 +106,8 @@ class SuricataEveCollector(Thread):  # pragma: no cover
                 logger.error(f"Failed to decode EVE JSON: {line}")
             except Exception as e:
                 logger.error(f"Error processing Suricata event: {e}")
+
+        logger.info("Suricata EVE collector stopped")
 
     def _process_event(self, event: dict):
         """

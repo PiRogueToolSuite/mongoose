@@ -18,15 +18,15 @@ class HostnameEnrichment:
     def enrich_network_event(self, event: Union[NetworkDPI, NetworkFlow, NetworkAlert]):
         if not hasattr(event, "src_ip") or not hasattr(event, "dst_ip"):
             return
+
         event.enrichment["src_hostname"] = ""
-        event.enrichment["dst_hostname"] = getattr(event, "requested_server_name", "")
+        event.enrichment["dst_hostname"] = ""
 
         try:
             event.enrichment["src_hostname"] = self.get_hostname(event.src_ip)
         except (Exception,):
             pass
         try:
-            if not event.enrichment["dst_hostname"]:
-                event.enrichment["dst_hostname"] = self.get_hostname(event.dst_ip)
+            event.enrichment["dst_hostname"] = self.get_hostname(event.dst_ip)
         except (Exception,):
             pass

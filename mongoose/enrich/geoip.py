@@ -2,29 +2,92 @@ import ipaddress
 import logging
 from functools import lru_cache
 from typing import Union, Any, Dict, Optional
+import geoip2.database
 
-import requests
+import geoip2
 
 from mongoose.models import NetworkDPI, NetworkFlow, NetworkAlert
 from mongoose.models.configuration import GeoIPConfiguration
 from mongoose.utils.exceptions import IgnoreCacheException
 
-logger = logging.getLogger("urllib3.connectionpool")
-logger.setLevel(logging.ERROR)
+logger = logging.getLogger(__name__)
 
 
 class GeoIP:
     def __init__(self, geoip_configuration: GeoIPConfiguration):
         self.geoip_configuration = geoip_configuration
+        self.databases = []
+        self.list_databases()
+
+    def list_databases(self):
+        if not self.geoip_configuration.maxmind_db_path.exists():
+            return
+
+        for db in self.geoip_configuration.maxmind_db:
+            db_path = self.geoip_configuration.maxmind_db_path / db
+            if not db_path.exists():
+                continue
+            self.databases.append(str(db_path))
+
+    def _get_asn_info(self, geoip_reader: geoip2.database.Reader, ip_address: str):
+        try:
+            data = geoip_reader.asn(ip_address)
+            return {
+                "asn": data.autonomous_system_number,
+                "organization": data.autonomous_system_organization,
+            }
+        except (Exception,) as e:
+            return {}
+
+    def _get_country_info(self, geoip_reader: geoip2.database.Reader, ip_address: str):
+        try:
+            data = geoip_reader.country(ip_address)
+            return {
+                "country": data.country.iso_code,
+                "country_name": data.country.name,
+                "continent": data.country.continent.code,
+                "continent_name": data.country.continent.name,
+            }
+        except (Exception,) as e:
+            return {}
+
+    def _get_city_info(self, geoip_reader: geoip2.database.Reader, ip_address: str):
+        try:
+            data = geoip_reader.city(ip_address)
+            return {
+                "city": data.city.name,
+                "country": data.country.iso_code,
+                "country_name": data.country.name,
+                "continent": data.continent.code,
+                "continent_name": data.continent.name,
+                "latitude": data.location.latitude,
+                "longitude": data.location.longitude,
+                "timezone": data.location.time_zone,
+                "accuracy_radius": data.location.accuracy_radius,
+            }
+        except (Exception,) as e:
+            return {}
 
     @lru_cache(maxsize=512)
     def request_geoip(self, ip_address: str) -> Optional[Dict[Any, Any]]:
-        try:
-            response = requests.get(self.geoip_configuration.remote_service_url + "/" + ip_address, timeout=1)
-            if response.status_code == 200:
-                return response.json()
-        except (Exception,):
-            pass
+        geoip_data = {}
+        for db in self.databases:
+            with geoip2.database.Reader(db) as geoip:
+                if "ASN" in db:
+                    _d = self._get_asn_info(geoip, ip_address)
+                    logger.debug(f"GeoIP ASN {_d}")
+                    geoip_data.update(_d)
+                if "Country" in db:
+                    _d = self._get_country_info(geoip, ip_address)
+                    logger.debug(f"GeoIP Country {_d}")
+                    geoip_data.update(_d)
+                if "City" in db:
+                    _d = self._get_city_info(geoip, ip_address)
+                    logger.debug(f"GeoIP City {_d}")
+                    geoip_data.update(_d)
+
+        if geoip_data:
+            return geoip_data
         raise IgnoreCacheException()  # prevents caching
 
     def enrich_network_event(self, event: Union[NetworkDPI, NetworkFlow, NetworkAlert]):

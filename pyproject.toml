@@ -21,15 +21,19 @@ classifiers = [
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
 ]
+
 dynamic = [ "version" ]
 dependencies = [
   "communityid==1.4",
+  "geoip2==2.9",
   "nfstream==6.5.4",
   "pydantic==1.10.4",
   "pyyaml>=6.0.3",
   "requests==2.28.1",
   "sqlalchemy==1.4.46",
 ]
+
+scripts.mongoosed = "mongoose.entrypoints.cmd:main_cli"
 
 [dependency-groups]
 dev = [

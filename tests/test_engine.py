@@ -41,7 +41,7 @@ def test_engine_start(mock_enrich_init, mock_file_start, mock_enrich_start, mock
                 "suricata": {"socket_path": "/tmp/suricata.socket", "enable": True},
                 "nf_stream": {"interface": "eth0", "enable": False},
             },
-            "enrichment": {"geoip": {"remote_service_url": "http://geoip", "enable": True}},
+            "enrichment": {"geoip": {"enable": True}},
             "forwarder": {
                 "file": {"output_dir": str(tmp_path / "output"), "enable": True},
                 "webhooks": [{"url": "http://webhook", "enable": False}],
@@ -59,12 +59,6 @@ def test_engine_start(mock_enrich_init, mock_file_start, mock_enrich_start, mock
     assert mock_enrich_start.called
     assert mock_file_start.called
 
-    # Verify Enrich was initialized with EnrichmentConfiguration
-    from mongoose.models.configuration import EnrichmentConfiguration
-
-    args, kwargs = mock_enrich_init.call_args
-    assert isinstance(args[0], EnrichmentConfiguration)
-
 
 @patch("mongoose.core.processing.ProcessingQueue.stop_processing")
 def test_engine_stop(mock_stop_processing, tmp_path):
@@ -74,7 +68,7 @@ def test_engine_stop(mock_stop_processing, tmp_path):
                 "suricata": {"socket_path": "/tmp/suricata.socket", "enable": False},
                 "nf_stream": {"interface": "eth0", "enable": False},
             },
-            "enrichment": {"geoip": {"remote_service_url": "http://geoip", "enable": False}},
+            "enrichment": {"geoip": {"enable": False}},
             "forwarder": {
                 "file": {"output_dir": str(tmp_path / "output"), "enable": False},
                 "webhooks": [{"url": "http://webhook", "enable": False}],

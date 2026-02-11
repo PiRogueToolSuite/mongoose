@@ -15,38 +15,41 @@ Helpers to collect, enrich and store Suricata events and network flows.
 </p>
 </div>
 
-### Short description
-
-Mongoose — lightweight Python toolkit to collect, enrich, store and forward
-network telemetry (Suricata EVE, flows from nfstream, and other sources).
+Mongoose — a lightweight dead-simple Python libray and daemon to collect, enrich, store and forward
+network events such as Suricata alerts and Deep Packet Inspection flows.
 
 ### Purpose
 
 Mongoose provides a modular pipeline to ingest network events and flows,
 enrich them with metadata (for example GeoIP and Community ID), persist
-short-term state in a small SQLite store, and forward processed records to
+short-term state in a SQLite database, and forward processed records to
 files, webhooks or other sinks. It is designed to be simple to configure,
-extend and integrate into both production and testing workflows.
+extend and integrate into other applications.
 
 ### Overview
+**Mongoose** is a versatile Python-based framework designed for the collection,
+enrichment, and distribution of network security events and traffic flows. It acts
+as a central hub for processing data from various network monitoring tools, providing a
+modular and scalable pipeline for security analysts and researchers.
 
-**Mongoose** is a versatile Python-based framework designed for the collection, enrichment, and distribution of network security events and traffic flows. It acts as a central hub for processing data from various network monitoring tools, providing a modular and scalable pipeline for security analysts and researchers.
+At its core, Mongoose utilizes a thread-safe **pub-sub engine** that allows for
+concurrent processing of different data streams. Data is collected from sources
+like Suricata EVE logs and NFStream, published to specific topics, and then
+consumed by various modules for enrichment (e.g., GeoIP, Community ID), persistent
+storage (SQLite), or forwarding to external endpoints via webhooks or local files.
 
-At its core, Mongoose utilizes a thread-safe **pub-sub engine** that allows for concurrent processing of different data streams. Data is collected from sources like Suricata EVE logs and NFStream, published to specific topics, and then consumed by various modules for enrichment (e.g., GeoIP, Community ID), persistent storage (SQLite), or forwarding to external endpoints via webhooks or local files.
-
-The project is built with extensibility in mind, making it easy to integrate new data sources and processing logic to adapt to different network monitoring needs.
+The project is built with extensibility in mind, making it easy to integrate new
+data sources and processing logic to adapt to different network monitoring needs.
 
 ### Key features
 
 - Modular collectors: Suricata EVE, nfstream, file-based replay.
 - Enrichment: GeoIP lookup, Community ID calculation and custom enrichers.
 - Pluggable forwarders: file, webhook, Discord (extensible to new sinks).
-- Lightweight SQLite-backed store for short-term persistence and replay.
+- Lightweight SQLite storage for short-term persistence.
 - Thread-safe pub-sub engine and safe caches for concurrent ingestion.
-- Small test harness and example configuration to validate pipelines.
 
-### Installation (quick)
-
+### Installation
 Install in a virtual environment and editable mode for development:
 
 ```bash
@@ -54,8 +57,7 @@ python -m venv .venv && source .venv/bin/activate
 pip install -e .
 ```
 
-### CLI usage (zsh)
-
+### CLI usage
 ```bash
 # show top-level help
 mongoose --help
@@ -64,12 +66,10 @@ mongoose --help
 mongoose --config docs/example_config_test.yaml
 ```
 
-### Python library usage (minimal)
-
-Use Mongoose as a library when you want tighter integration inside an
-application or tests. The snippet below shows a common pattern: create an
-engine from a config and run a single pass. Replace the config path with
-your file or a parsed dict depending on your integration.
+### Python library usage
+Use Mongoose as a library when you can use in your application. The snippet
+below shows how to instanciate the engine with a config and run it.
+Replace the config path with your own file.
 
 ```python
 import time

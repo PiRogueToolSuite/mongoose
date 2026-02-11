@@ -1,7 +1,10 @@
 import logging
-import yaml
-from typing import List, Optional, Type
+import threading
 
+import yaml
+from typing import List, Optional, Type, Dict
+
+from mongoose.core.cache import SeverityCache
 from mongoose.core.processing import ProcessingQueue
 from mongoose.core.sink import Sink
 from mongoose.forward.discord import DiscordForwarder
@@ -12,20 +15,42 @@ from mongoose.enrich.base import Enrich
 from mongoose.forward.file import FileForwarder
 from mongoose.forward.webhook import WebhookForwarder
 from mongoose.store.sqlite import SqliteStore
-from mongoose.core.cache import SeverityCache
 import mongoose.core.cache as cache_module
 
 logger = logging.getLogger(__name__)
 
 
-class Engine:
+class Singleton(type):
+    _instances: Dict[type, type] = {}
+
+    def __call__(cls, *args, **kwargs):
+        """Control instance creation to ensure singleton behavior.
+
+        Args:
+            cls (type): The class being instantiated
+            *args: Positional arguments for class initialization
+            **kwargs: Keyword arguments for class initialization
+
+        Returns:
+            type: The singleton instance of the class
+
+        Note:
+            If an instance already exists, ``__init__`` will still be called with
+            the provided arguments, but no new instance is created.
+        """
+        if cls not in cls._instances:
+            cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
+        return cls._instances[cls]
+
+
+class Engine(metaclass=Singleton):
     """
     The Engine class is responsible for loading the configuration,
     initializing components (collectors, enrichers, forwarders),
     and managing their lifecycle (start, stop, reload).
     """
 
-    def __init__(self, config_path: str):
+    def __init__(self, config_path: str, interface: str = None):
         self.config_path = config_path
         self.config: Optional[Configuration] = None
         self.processing_queue = ProcessingQueue()
@@ -34,8 +59,11 @@ class Engine:
         self.enrichment: Optional[Enrich] = None
         self.database_storage = None
         self.sink: Sink = Sink()
+        self.interface = interface
         self.load_config()
         self._setup_components()
+        self.started = False
+        self.thread_id = threading.get_ident()
 
     def load_extra_config(self, name: str, config_class: Type):
         configurations = []
@@ -90,6 +118,12 @@ class Engine:
         if not self.config:
             return
 
+        logger.debug(f"Configuration loaded from {self.config_path}")
+        logger.debug(self.config)
+
+        if not self.config.database_path.parent.is_dir():
+            self.config.database_path.parent.mkdir(exist_ok=True, parents=True)
+
         self.database_storage = SqliteStore(self.config.database_path, history_config=self.config.history)
 
         # Setup Collectors
@@ -97,6 +131,8 @@ class Engine:
             self.collectors.append(SuricataEveCollector(self.config.collector.suricata))
 
         if self.config.collector.nf_stream and self.config.collector.nf_stream.enable:
+            if self.interface:
+                self.config.collector.nf_stream.interface = self.interface
             self.collectors.append(NFStreamCollector(self.config.collector.nf_stream))
 
         # Setup Enrichment
@@ -121,6 +157,8 @@ class Engine:
         """Start all configured and enabled collectors, enrichers, and forwarders."""
         logger.info("Starting Engine...")
 
+        self.started = True
+
         # Reset the stop event in case it was set during a previous run
         self.processing_queue.stop_processing_event.clear()
 
@@ -143,12 +181,11 @@ class Engine:
 
     def stop(self):
         """Stop all processing by signaling the processing queue and waiting for threads."""
-        logger.info("Stopping Engine...")
-        self.processing_queue.stop_processing()
+        logger.info(f"Stopping Engine... [{threading.get_ident()}]")
 
-        # Stop Collectors
-        for collector in self.collectors:
-            collector.join()
+        self.started = False
+
+        self.processing_queue.stop_processing()
 
         self.sink.stop()
         self.processing_queue.queues.clear()
@@ -159,7 +196,6 @@ class Engine:
         """Reload configuration and restart all components."""
         logger.info("Reloading Engine configuration...")
         self.stop()
-        # In a real scenario, we might want to wait a bit or join threads
         self.load_config()
         self._setup_components()
         self.start()

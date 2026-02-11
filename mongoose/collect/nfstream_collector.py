@@ -4,12 +4,10 @@ from threading import Thread
 
 from nfstream import NFStreamer
 
-from mongoose.core.cache import SeverityCache
 from mongoose.core.processing import ProcessingQueue, ProcessingTopic
 from mongoose.models.configuration import NFStreamConfiguration
 from mongoose.models.network_dpi import NetworkDPI
 from mongoose.utils.protocols import PROTOCOL_NUMBERS
-
 
 logger = logging.getLogger(__name__)
 
@@ -41,17 +39,12 @@ class NFStreamCollector(Thread):
                 `max_nflows` values.
         """
         super().__init__()
-        # ensure this thread will not prevent process exit if left
-        # running accidentally
         self.daemon = True
-        self.severity_cache = SeverityCache()
 
         self.configuration = configuration
         """Configuration object providing `interface` and `active_timeout` used to configure `NFStreamer`."""
 
         self.processing_queue = ProcessingQueue()
-        """Queue used to publish `NetworkDPI` objects for downstream processing."""
-
         self.topic = ProcessingTopic.NETWORK_DPI
 
     @staticmethod
@@ -105,16 +98,12 @@ class NFStreamCollector(Thread):
               to `processing_queue` under `ProcessingTopic.NETWORK_DPI`.
             - Stops if `processing_queue.processing_stopped()` returns
               True.
-
-        The implementation guards against malformed input and
-        ensures the streamer is closed if it implements a close/stop
-        API.
         """
         try:
             streamer = NFStreamer(
                 source=self.configuration.interface,
                 active_timeout=self.configuration.active_timeout,
-                idle_timeout=2,
+                idle_timeout=30,
                 max_nflows=self.configuration.max_nflows,
             )
         except (Exception,):
@@ -123,26 +112,24 @@ class NFStreamCollector(Thread):
 
         try:
             for _flow in streamer:
-                # Build NetworkDPI from NFStreamer flow attributes,
-                # excluding 'id'. Use getattr to avoid KeyError-like
-                # issues if attributes are missing.
+                # Allow an external stop request via the processing queue
+                if self.processing_queue.processing_stopped():
+                    logger.info("Processing queue signaled stop; stopping collector loop")
+                    # raise
+                    return
+
                 try:
                     flow = NetworkDPI(**{k: getattr(_flow, k) for k in _flow.keys() if k != "id"})
                 except (Exception,):
                     logger.exception("Failed to construct NetworkDPI from flow; skipping this flow")
-                    # skip this flow and continue
                     continue
 
-                # Safe protocol number handling: convert to int if
-                # possible, otherwise set sentinel -1 (invalid)
                 try:
                     proto_val = getattr(_flow, "protocol", None)
                     flow.protocol_number = int(proto_val) if proto_val is not None else -1
                 except (TypeError, ValueError):
                     flow.protocol_number = -1
 
-                # Safe time conversion: some flows may lack the field or
-                # contain invalid values. Use epoch (0) as fallback.
                 ms = getattr(_flow, "bidirectional_first_seen_ms", None)
                 try:
                     ts = float(ms) / 1000.0
@@ -157,7 +144,6 @@ class NFStreamCollector(Thread):
                 try:
                     self.resolve_protocol(flow)
                 except (Exception,):
-                    # resolve_protocol is defensive, but guard anyway
                     logger.exception("Protocol resolution failed for flow")
 
                 # Publish the processed flow for downstream handling
@@ -165,21 +151,5 @@ class NFStreamCollector(Thread):
                     self.processing_queue.publish(self.topic, flow)
                 except (Exception,):
                     logger.exception("Failed to publish flow to processing queue")
-
-                # Allow an external stop request via the processing queue
-                if self.processing_queue.processing_stopped():
-                    logger.info("Processing queue signaled stop; stopping collector loop")
-                    break
         except (Exception,):
             logger.exception("Unexpected error while iterating NFStreamer")
-        finally:
-            # Ensure streamer resources are cleaned up if possible
-            if streamer is not None:
-                for method in ("close", "stop", "shutdown"):
-                    if hasattr(streamer, method):
-                        try:
-                            getattr(streamer, method)()
-                            logger.debug("Called %s() on streamer during cleanup", method)
-                        except (Exception,):
-                            logger.exception("Error while calling %s() on streamer during cleanup", method)
-                        break

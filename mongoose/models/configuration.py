@@ -47,8 +47,8 @@ class WebhookForwarderConfiguration(BaseModel):
     timeout: float = Field(default=10.0, gt=0)
     """Request timeout in seconds. Defaults to 10.0."""
 
-    enable: bool = Field(default=True)
-    """Enable the forwarder. Defaults to True."""
+    enable: bool = Field(default=False)
+    """Enable the forwarder. Defaults to False."""
 
     topics: List[str] = Field(default_factory=lambda: ["enriched-network-dpi", "enriched-network-alert"])
     """List of topics to forward. Defaults to ["enriched-network-dpi", "enriched-network-alert"]."""
@@ -105,8 +105,8 @@ class FileForwarderConfiguration(BaseModel):
     prefix: str = ""
     """Optional prefix for the filenames (e.g., "mongoose-")."""
 
-    enable: bool = Field(default=True)
-    """Enable the forwarder. Defaults to True."""
+    enable: bool = Field(default=False)
+    """Enable the forwarder. Defaults to False."""
 
 
 class NFStreamConfiguration(BaseModel):
@@ -142,8 +142,11 @@ class SuricataEveConfiguration(BaseModel):
 
 
 class GeoIPConfiguration(BaseModel):
-    remote_service_url: str
-    """The URL of the remote service to be called."""
+    maxmind_db_path: Path = Path("/var/lib/GeoIP")
+    """The path to the GeoIP databases."""
+
+    maxmind_db: List[str] = ["GeoLite2-ASN.mmdb", "GeoLite2-City.mmdb", "GeoLite2-Country.mmdb"]
+    """The list of GeoIP databases to use."""
 
     enable: bool = Field(default=True)
     """Enable the GeoIP enrichment. Defaults to True."""
@@ -187,9 +190,6 @@ class DiscordForwarderConfiguration(WebhookForwarderConfiguration):
 class ForwarderConfiguration(BaseModel):
     file: Optional[FileForwarderConfiguration] = None
     webhooks: Optional[List[WebhookForwarderConfiguration]] = []
-    # Optional list of Discord forwarder configurations. Discord has a
-    # specific webhook format and extra options like username/avatar and
-    # allowed_mentions to prevent accidental mass pings.
     discord: Optional[List[DiscordForwarderConfiguration]] = []
 
 
@@ -204,7 +204,7 @@ class HistoryConfiguration(BaseModel):
     max_records: Optional[int] = Field(default=None, ge=1)
     """Maximum number of records to keep in each table."""
 
-    max_duration_days: Optional[int] = Field(default=None, ge=1)
+    max_duration_days: int = Field(default=2 * 7, ge=1)
     """Maximum duration to keep records in days."""
 
     enable: bool = Field(default=True)
