@@ -2,7 +2,8 @@
 <img width="60px" src="https://pts-project.org/android-chrome-512x512.png" alt="PTS logo">
 <h1>Mongoose</h1>
 <p>
-Helpers to collect, enrich and store Suricata events and network flows.
+Lightweight dead-simple Python library to collect, enrich, store and forward
+network events such as Suricata alerts and network flows
 </p>
 <p>
 <img src="https://img.shields.io/badge/License-GPL_v3-8A2BE2" alt="License: GPL v3">
@@ -15,7 +16,9 @@ Helpers to collect, enrich and store Suricata events and network flows.
 </p>
 </div>
 
-Mongoose — a lightweight dead-simple Python libray and daemon to collect, enrich, store and forward
+![](https://github.com/PiRogueToolSuite/mongoose/raw/main/docs/_static/diagram.png)
+
+Mongoose — a lightweight dead-simple Python library and daemon to collect, enrich, store and forward
 network events such as Suricata alerts and Deep Packet Inspection flows.
 
 ### Purpose
