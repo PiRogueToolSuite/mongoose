@@ -567,18 +567,6 @@ wheels = [
 ]
 
 [[package]]
-name = "dunamai"
-version = "1.25.0"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "packaging" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/f1/2f/194d9a34c4d831c6563d2d990720850f0baef9ab60cb4ad8ae0eff6acd34/dunamai-1.25.0.tar.gz", hash = "sha256:a7f8360ea286d3dbaf0b6a1473f9253280ac93d619836ad4514facb70c0719d1", size = 46155, upload-time = "2025-07-04T19:25:56.082Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/36/41/04e2a649058b0713b00d6c9bd22da35618bb157289e05d068e51fddf8d7e/dunamai-1.25.0-py3-none-any.whl", hash = "sha256:7f9dc687dd3256e613b6cc978d9daabfd2bb5deb8adc541fc135ee423ffa98ab", size = 27022, upload-time = "2025-07-04T19:25:54.863Z" },
-]
-
-[[package]]
 name = "esbonio"
 version = "1.0.0"
 source = { registry = "https://pypi.org/simple" }
@@ -1254,106 +1242,6 @@ wheels = [
 ]
 
 [[package]]
-name = "mongoose"
-source = { editable = "." }
-dependencies = [
-    { name = "communityid" },
-    { name = "geoip2" },
-    { name = "nfstream" },
-    { name = "pydantic" },
-    { name = "pyyaml" },
-    { name = "requests" },
-    { name = "sqlalchemy" },
-]
-
-[package.dev-dependencies]
-dev = [
-    { name = "hatchling" },
-    { name = "mypy" },
-    { name = "pre-commit-uv" },
-    { name = "pytest" },
-    { name = "ruff" },
-    { name = "tox" },
-    { name = "tox-uv" },
-    { name = "uv-dynamic-versioning" },
-]
-docs = [
-    { name = "autoclasstoc" },
-    { name = "myst-parser" },
-    { name = "sphinx" },
-    { name = "sphinx-autobuild" },
-    { name = "sphinx-copybutton" },
-    { name = "sphinx-hoverxref" },
-    { name = "sphinx-jsonschema" },
-    { name = "sphinx-needs" },
-    { name = "sphinx-notfound-page" },
-    { name = "sphinx-pydantic" },
-    { name = "sphinx-rtd-theme" },
-    { name = "sphinx-sqlalchemy" },
-    { name = "sphinx-toolbox" },
-    { name = "sphinxcontrib-datatemplates" },
-    { name = "sphinxcontrib-mermaid" },
-]
-test = [
-    { name = "coverage" },
-    { name = "hatchling" },
-    { name = "mypy" },
-    { name = "pytest" },
-    { name = "pytest-cov" },
-    { name = "pytest-md-report" },
-    { name = "sphinx" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "communityid", specifier = "==1.4" },
-    { name = "geoip2", specifier = "==2.9.0" },
-    { name = "nfstream", specifier = "==6.5.4" },
-    { name = "pydantic", specifier = "==1.10.4" },
-    { name = "pyyaml", specifier = ">=6.0.3" },
-    { name = "requests", specifier = "==2.28.1" },
-    { name = "sqlalchemy", specifier = "==1.4.46" },
-]
-
-[package.metadata.requires-dev]
-dev = [
-    { name = "hatchling" },
-    { name = "mypy" },
-    { name = "pre-commit-uv" },
-    { name = "pytest" },
-    { name = "ruff" },
-    { name = "tox" },
-    { name = "tox-uv" },
-    { name = "uv-dynamic-versioning" },
-]
-docs = [
-    { name = "autoclasstoc" },
-    { name = "myst-parser" },
-    { name = "sphinx" },
-    { name = "sphinx-autobuild" },
-    { name = "sphinx-copybutton" },
-    { name = "sphinx-hoverxref" },
-    { name = "sphinx-jsonschema" },
-    { name = "sphinx-needs" },
-    { name = "sphinx-notfound-page" },
-    { name = "sphinx-pydantic" },
-    { name = "sphinx-rtd-theme" },
-    { name = "sphinx-sqlalchemy" },
-    { name = "sphinx-toolbox" },
-    { name = "sphinxcontrib-datatemplates" },
-    { name = "sphinxcontrib-mermaid" },
-]
-test = [
-    { name = "coverage" },
-    { name = "hatchling" },
-    { name = "mypy" },
-    { name = "pytest" },
-    { name = "pytest-cov" },
-    { name = "pytest-md-report" },
-    { name = "sphinx" },
-]
-
-[[package]]
 name = "more-itertools"
 version = "10.8.0"
 source = { registry = "https://pypi.org/simple" }
@@ -1868,6 +1756,105 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/1c/15/dd6fd869753ce82ff64dcbc18356093471a5a5adf4f77ed1f805d473d859/psutil-7.2.1-cp36-abi3-musllinux_1_2_x86_64.whl", hash = "sha256:99a4cd17a5fdd1f3d014396502daa70b5ec21bf4ffe38393e152f8e449757d67", size = 147402, upload-time = "2025-12-29T08:26:39.21Z" },
     { url = "https://files.pythonhosted.org/packages/34/68/d9317542e3f2b180c4306e3f45d3c922d7e86d8ce39f941bb9e2e9d8599e/psutil-7.2.1-cp37-abi3-win_amd64.whl", hash = "sha256:b1b0671619343aa71c20ff9767eced0483e4fc9e1f489d50923738caf6a03c17", size = 136938, upload-time = "2025-12-29T08:26:41.036Z" },
     { url = "https://files.pythonhosted.org/packages/3e/73/2ce007f4198c80fcf2cb24c169884f833fe93fbc03d55d302627b094ee91/psutil-7.2.1-cp37-abi3-win_arm64.whl", hash = "sha256:0d67c1822c355aa6f7314d92018fb4268a76668a536f133599b91edd48759442", size = 133836, upload-time = "2025-12-29T08:26:43.086Z" },
+]
+
+[[package]]
+name = "pts-mongoose"
+version = "1.0.0"
+source = { editable = "." }
+dependencies = [
+    { name = "communityid" },
+    { name = "geoip2" },
+    { name = "nfstream" },
+    { name = "pydantic" },
+    { name = "pyyaml" },
+    { name = "requests" },
+    { name = "sqlalchemy" },
+]
+
+[package.dev-dependencies]
+dev = [
+    { name = "hatchling" },
+    { name = "mypy" },
+    { name = "pre-commit-uv" },
+    { name = "pytest" },
+    { name = "ruff" },
+    { name = "tox" },
+    { name = "tox-uv" },
+]
+docs = [
+    { name = "autoclasstoc" },
+    { name = "myst-parser" },
+    { name = "sphinx" },
+    { name = "sphinx-autobuild" },
+    { name = "sphinx-copybutton" },
+    { name = "sphinx-hoverxref" },
+    { name = "sphinx-jsonschema" },
+    { name = "sphinx-needs" },
+    { name = "sphinx-notfound-page" },
+    { name = "sphinx-pydantic" },
+    { name = "sphinx-rtd-theme" },
+    { name = "sphinx-sqlalchemy" },
+    { name = "sphinx-toolbox" },
+    { name = "sphinxcontrib-datatemplates" },
+    { name = "sphinxcontrib-mermaid" },
+]
+test = [
+    { name = "coverage" },
+    { name = "hatchling" },
+    { name = "mypy" },
+    { name = "pytest" },
+    { name = "pytest-cov" },
+    { name = "pytest-md-report" },
+    { name = "sphinx" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "communityid", specifier = "==1.4" },
+    { name = "geoip2", specifier = "==2.9" },
+    { name = "nfstream", specifier = "==6.5.4" },
+    { name = "pydantic", specifier = "==1.10.4" },
+    { name = "pyyaml", specifier = ">=6.0.3" },
+    { name = "requests", specifier = "==2.28.1" },
+    { name = "sqlalchemy", specifier = "==1.4.46" },
+]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "hatchling" },
+    { name = "mypy" },
+    { name = "pre-commit-uv" },
+    { name = "pytest" },
+    { name = "ruff" },
+    { name = "tox" },
+    { name = "tox-uv" },
+]
+docs = [
+    { name = "autoclasstoc" },
+    { name = "myst-parser" },
+    { name = "sphinx" },
+    { name = "sphinx-autobuild" },
+    { name = "sphinx-copybutton" },
+    { name = "sphinx-hoverxref" },
+    { name = "sphinx-jsonschema" },
+    { name = "sphinx-needs" },
+    { name = "sphinx-notfound-page" },
+    { name = "sphinx-pydantic" },
+    { name = "sphinx-rtd-theme" },
+    { name = "sphinx-sqlalchemy" },
+    { name = "sphinx-toolbox" },
+    { name = "sphinxcontrib-datatemplates" },
+    { name = "sphinxcontrib-mermaid" },
+]
+test = [
+    { name = "coverage" },
+    { name = "hatchling" },
+    { name = "mypy" },
+    { name = "pytest" },
+    { name = "pytest-cov" },
+    { name = "pytest-md-report" },
+    { name = "sphinx" },
 ]
 
 [[package]]
@@ -2835,15 +2822,6 @@ wheels = [
 ]
 
 [[package]]
-name = "tomlkit"
-version = "0.14.0"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/c3/af/14b24e41977adb296d6bd1fb59402cf7d60ce364f90c890bd2ec65c43b5a/tomlkit-0.14.0.tar.gz", hash = "sha256:cf00efca415dbd57575befb1f6634c4f42d2d87dbba376128adb42c121b87064", size = 187167, upload-time = "2026-01-13T01:14:53.304Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/b5/11/87d6d29fb5d237229d67973a6c9e06e048f01cf4994dee194ab0ea841814/tomlkit-0.14.0-py3-none-any.whl", hash = "sha256:592064ed85b40fa213469f81ac584f67a4f2992509a7c3ea2d632208623a3680", size = 39310, upload-time = "2026-01-13T01:14:51.965Z" },
-]
-
-[[package]]
 name = "tox"
 version = "4.34.1"
 source = { registry = "https://pypi.org/simple" }
@@ -2956,21 +2934,6 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/1d/1b/2d457ee7e2dd35fc22ae6f656bb45b781b33083d4f0a40901b9ae59e0b10/uv-0.9.25-py3-none-win32.whl", hash = "sha256:4df14479f034f6d4dca9f52230f912772f56ceead3354c7b186a34927c22188a", size = 20263705, upload-time = "2026-01-13T23:20:47.814Z" },
     { url = "https://files.pythonhosted.org/packages/5c/0b/05ad2dc53dab2c8aa2e112ef1f9227a7b625ba3507bedd7b31153d73aa5f/uv-0.9.25-py3-none-win_amd64.whl", hash = "sha256:001629fbc2a955c35f373311591c6952be010a935b0bc6244dc61da108e4593d", size = 22311694, upload-time = "2026-01-13T23:21:02.562Z" },
     { url = "https://files.pythonhosted.org/packages/54/4e/99788924989082356d6aa79d8bfdba1a2e495efaeae346fd8fec83d3f078/uv-0.9.25-py3-none-win_arm64.whl", hash = "sha256:ea26319abf9f5e302af0d230c0f13f02591313e5ffadac34931f963ef4d7833d", size = 20645549, upload-time = "2026-01-13T23:20:37.201Z" },
-]
-
-[[package]]
-name = "uv-dynamic-versioning"
-version = "0.12.0"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "dunamai" },
-    { name = "hatchling" },
-    { name = "jinja2" },
-    { name = "tomlkit" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/ac/ae/66c95eca70db2a0d01212f05c6cb589e0668532daad10bbbf434f82ccfe7/uv_dynamic_versioning-0.12.0.tar.gz", hash = "sha256:e853e0c5b2425a68005580325d4975a8c37b66015589ca45ef96e660fe0f8f16", size = 41499, upload-time = "2025-12-14T00:47:40.774Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/b4/8b/1dace94e7786f40e5cbcebb3a43365832798e497bbbb7281557cef72cb4c/uv_dynamic_versioning-0.12.0-py3-none-any.whl", hash = "sha256:2d2f1fb806c2e351d0d0a3840aaf7b3c6ce73757080b1ada4ac5dc44f7dd4c9e", size = 11477, upload-time = "2025-12-14T00:47:39.305Z" },
 ]
 
 [[package]]

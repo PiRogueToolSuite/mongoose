@@ -1,10 +1,11 @@
-Source: mongoose
+Source: pirogue-mongoose
 Section: misc
 Priority: optional
 Maintainer: U+039b <hello@pts-project.org>
 Build-Depends:
  debhelper-compat (= 13),
  dh-python,
+ python3-pytest,
  python3-all,
  python3-setuptools,
  quilt,
@@ -12,18 +13,29 @@ Standards-Version: 4.5.1
 Homepage: https://github.com/PiRogueToolSuite/mongoose
 Rules-Requires-Root: no
 
-Package: mongoose
+Package: pirogue-mongoose
 Architecture: all
 Depends:
+ suricata,
+ suricata-update,
  geoipupdate,
  python3-communityid,
  python3-geoip2,
- python3-nfstream
+ python3-nfstream,
+ python3-numpy (>= 1:1.22),
  python3-pydantic,
  python3-yaml,
  python3-requests,
- python3-sqlalchemy
+ python3-sqlalchemy,
+ python3-systemd,
+ pirogue-admin (>= 2.0.0),
  ${python3:Depends},
  ${misc:Depends},
+Conflicts:
+ pirogue-eve-collector,
+ pirogue-flow-inspector,
+Replaces:
+ pirogue-eve-collector,
+ pirogue-flow-inspector,
 Description: A lightweight dead-simple Python library and daemon to collect, enrich, store and forward
-network events such as Suricata alerts and Deep Packet Inspection flows.
+ network events such as Suricata alerts and Deep Packet Inspection flows.

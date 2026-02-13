@@ -3,7 +3,7 @@ Description=Collect, enrich and store network events
 Wants=networking.service
 
 [Service]
-ExecStart=/usr/sbin/mongoosed -c /etc/mongoose/mongoose.yaml
+ExecStart=/usr/bin/mongoosed -c /etc/mongoose/mongoose.yaml
 Environment=PYTHONUNBUFFERED=1
 Restart=on-failure
 RestartSec=2

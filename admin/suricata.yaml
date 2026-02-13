@@ -1,0 +1,658 @@
+%YAML 1.1
+---
+
+vars:
+  address-groups:
+    HOME_NET: "[@ISOLATED_NETWORK@]"
+    EXTERNAL_NET: "!$HOME_NET"
+
+    HTTP_SERVERS: "$HOME_NET"
+    SMTP_SERVERS: "$HOME_NET"
+    SQL_SERVERS: "$HOME_NET"
+    DNS_SERVERS: "$HOME_NET"
+    TELNET_SERVERS: "$HOME_NET"
+    AIM_SERVERS: "$EXTERNAL_NET"
+    DC_SERVERS: "$HOME_NET"
+    DNP3_SERVER: "$HOME_NET"
+    DNP3_CLIENT: "$HOME_NET"
+    MODBUS_CLIENT: "$HOME_NET"
+    MODBUS_SERVER: "$HOME_NET"
+    ENIP_CLIENT: "$HOME_NET"
+    ENIP_SERVER: "$HOME_NET"
+
+  port-groups:
+    HTTP_PORTS: "80"
+    SHELLCODE_PORTS: "!80"
+    ORACLE_PORTS: 1521
+    SSH_PORTS: 22
+    DNP3_PORTS: 20000
+    MODBUS_PORTS: 502
+    FILE_DATA_PORTS: "[$HTTP_PORTS,110,143]"
+    FTP_PORTS: 21
+
+
+default-log-dir: /var/log/suricata/
+
+stats:
+  enabled: no
+
+outputs:
+  - fast:
+      enabled: no
+
+  - eve-log:
+      enabled: yes
+      filetype: unix_dgram
+      filename: /run/suricata.socket
+      level: Info
+      metadata: yes 
+      pcap-file: false
+      community-id: true
+      community-id-seed: 0
+
+      xff:
+        enabled: no
+        mode: extra-data
+        deployment: reverse
+        header: X-Forwarded-For
+
+      types:
+        - alert:
+            metadata:
+              app-layer: true
+              flow: true
+              rule:
+                metadata: true 
+                raw: true
+
+        - netflow
+
+  - unified2-alert:
+      enabled: no
+      xff:
+        enabled: no
+
+  - http-log:
+      enabled: no
+
+  - tls-log:
+      enabled: no
+
+  - tls-store:
+      enabled: no
+
+  - dns-log:
+      enabled: no
+
+  - pcap-log:
+      enabled: no
+
+  - alert-debug:
+      enabled: no
+
+  - alert-prelude:
+      enabled: no
+
+  - stats:
+      enabled: no
+
+  - syslog:
+      enabled: no
+
+  - drop:
+      enabled: no
+
+  - file-store:
+      version: 2
+      enabled: no
+      xff:
+        enabled: no
+        mode: extra-data
+        deployment: reverse
+        header: X-Forwarded-For
+
+  - file-store:
+      enabled: no       # set to yes to enable
+      log-dir: files    # directory to store the files
+      force-magic: no   # force logging magic on all stored files
+      force-filestore: no # force storing of all files
+      include-pid: no # set to yes to include pid in file names
+
+  - file-log:
+      enabled: no
+      filename: files-json.log
+      append: yes
+
+      force-magic: no  
+      
+  - tcp-data:
+      enabled: no
+      type: file
+      filename: tcp-data.log
+      
+  - http-body-data:
+      enabled: no
+      type: file
+      filename: http-data.log
+      
+  - lua:
+      enabled: no
+
+logging:
+  default-log-level: notice
+  default-output-filter:
+  outputs:
+  - console:
+      enabled: yes
+  - file:
+      enabled: yes
+      level: info
+      filename: /var/log/suricata/suricata.log
+  - syslog:
+      enabled: no
+      facility: local5
+      format: "[%i] <%d> -- "
+
+
+# Linux high speed capture support
+af-packet:
+  - cluster-id: 99
+    cluster-type: cluster_flow
+    defrag: true
+    interface: @ISOLATED_INTERFACE@
+
+# Cross platform libpcap capture support
+pcap:
+  - interface: @ISOLATED_INTERFACE@
+  - interface: default
+
+# Settings for reading pcap files
+pcap-file:
+  checksum-checks: auto
+
+app-layer:
+  protocols:
+    krb5:
+      enabled: yes
+    ikev2:
+      enabled: yes
+    tls:
+      enabled: yes
+      detection-ports:
+        dp: 443
+      ja3-fingerprints: no
+    dcerpc:
+      enabled: yes
+    ftp:
+      enabled: yes
+    ssh:
+      enabled: yes
+    smtp:
+      enabled: yes
+      mime:
+        decode-mime: yes
+        decode-base64: yes
+        decode-quoted-printable: yes
+        header-value-depth: 2000
+        extract-urls: yes
+        body-md5: no
+      inspected-tracker:
+        content-limit: 100000
+        content-inspect-min-size: 32768
+        content-inspect-window: 4096
+    imap:
+      enabled: detection-only
+    msn:
+      enabled: detection-only
+    smb:
+      enabled: yes
+      detection-ports:
+        dp: 139, 445
+
+    nfs:
+      enabled: yes
+    tftp:
+      enabled: yes
+    dns:
+      tcp:
+        enabled: yes
+        detection-ports:
+          dp: 53
+      udp:
+        enabled: yes
+        detection-ports:
+          dp: 53
+    http:
+      enabled: yes
+      libhtp:
+         default-config:
+           personality: IDS
+           request-body-limit: 100kb
+           response-body-limit: 100kb
+           request-body-minimal-inspect-size: 32kb
+           request-body-inspect-window: 4kb
+           response-body-minimal-inspect-size: 40kb
+           response-body-inspect-window: 16kb
+           response-body-decompress-layer-limit: 2
+           http-body-inline: auto
+           swf-decompression:
+             enabled: yes
+             type: both
+             compress-depth: 0
+             decompress-depth: 0
+           double-decode-path: no
+           double-decode-query: no
+
+         server-config:
+
+    modbus:
+      enabled: no
+      detection-ports:
+        dp: 502
+      stream-depth: 0
+
+    # DNP3
+    dnp3:
+      enabled: no
+      detection-ports:
+        dp: 20000
+
+    # SCADA EtherNet/IP and CIP protocol support
+    enip:
+      enabled: no
+      detection-ports:
+        dp: 44818
+        sp: 44818
+
+    # Note: parser depends on Rust support
+    ntp:
+      enabled: yes
+
+    dhcp:
+      enabled: yes
+
+# Limit for the maximum number of asn1 frames to decode (default 256)
+asn1-max-frames: 256
+
+coredump:
+  max-dump: unlimited
+
+host-mode: auto
+
+unix-command:
+  enabled: yes
+  filename: /var/run/suricata-command.socket
+
+legacy:
+  uricontent: enabled
+
+engine-analysis:
+  rules-fast-pattern: yes
+  rules: yes
+
+pcre:
+  match-limit: 3500
+  match-limit-recursion: 1500
+
+host-os-policy:
+  windows: [0.0.0.0/0]
+  bsd: []
+  bsd-right: []
+  old-linux: []
+  linux: []
+  old-solaris: []
+  solaris: []
+  hpux10: []
+  hpux11: []
+  irix: []
+  macos: []
+  vista: []
+  windows2k3: []
+
+defrag:
+  memcap: 32mb
+  hash-size: 65536
+  trackers: 65535 # number of defragmented flows to follow
+  max-frags: 65535 # number of fragments to keep (higher than trackers)
+  prealloc: yes
+  timeout: 60
+
+flow:
+  memcap: 128mb
+  hash-size: 65536
+  prealloc: 10000
+  emergency-recovery: 30
+
+vlan:
+  use-for-tracking: true
+
+flow-timeouts:
+
+  default:
+    new: 30
+    established: 300
+    closed: 0
+    bypassed: 100
+    emergency-new: 10
+    emergency-established: 100
+    emergency-closed: 0
+    emergency-bypassed: 50
+  tcp:
+    new: 60
+    established: 600
+    closed: 60
+    bypassed: 100
+    emergency-new: 5
+    emergency-established: 100
+    emergency-closed: 10
+    emergency-bypassed: 50
+  udp:
+    new: 30
+    established: 300
+    bypassed: 100
+    emergency-new: 10
+    emergency-established: 100
+    emergency-bypassed: 50
+  icmp:
+    new: 30
+    established: 300
+    bypassed: 100
+    emergency-new: 10
+    emergency-established: 100
+    emergency-bypassed: 50
+
+stream:
+  memcap: 64mb
+  checksum-validation: yes      # reject wrong csums
+  inline: auto                  # auto will use inline mode in IPS mode, yes or no set it statically
+  reassembly:
+    memcap: 256mb
+    depth: 1mb                  # reassemble 1mb into a stream
+    toserver-chunk-size: 2560
+    toclient-chunk-size: 2560
+    randomize-chunk-size: yes
+
+host:
+  hash-size: 4096
+  prealloc: 1000
+  memcap: 32mb
+
+decoder:
+  teredo:
+    enabled: true
+
+detect:
+  profile: medium
+  custom-values:
+    toclient-groups: 3
+    toserver-groups: 25
+  sgh-mpm-context: auto
+  inspection-recursion-limit: 3000
+  prefilter:
+    default: mpm
+  grouping:
+    #tcp-whitelist: 53, 80, 139, 443, 445, 1433, 3306, 3389, 6666, 6667, 8080
+    #udp-whitelist: 53, 135, 5060
+  profiling:
+    grouping:
+      dump-to-disk: false
+      include-rules: false      
+      include-mpm-stats: false
+mpm-algo: auto
+
+spm-algo: auto
+
+threading:
+  set-cpu-affinity: no
+  cpu-affinity:
+    - management-cpu-set:
+        cpu: [ 0 ]  
+    - receive-cpu-set:
+        cpu: [ 0 ]  
+    - worker-cpu-set:
+        cpu: [ "all" ]
+        mode: "exclusive"
+        prio:
+          low: [ 0 ]
+          medium: [ "1-2" ]
+          high: [ 3 ]
+          default: "medium"
+  detect-thread-ratio: 1.0
+
+luajit:
+  states: 128
+
+profiling:
+  rules:
+
+    # Profiling can be disabled here, but it will still have a
+    # performance impact if compiled in.
+    enabled: yes
+    filename: rule_perf.log
+    append: yes
+
+    # Sort options: ticks, avgticks, checks, matches, maxticks
+    # If commented out all the sort options will be used.
+    #sort: avgticks
+
+    # Limit the number of sids for which stats are shown at exit (per sort).
+    limit: 10
+
+    # output to json
+    json: yes
+
+  # per keyword profiling
+  keywords:
+    enabled: yes
+    filename: keyword_perf.log
+    append: yes
+
+  prefilter:
+    enabled: yes
+    filename: prefilter_perf.log
+    append: yes
+
+  # per rulegroup profiling
+  rulegroups:
+    enabled: yes
+    filename: rule_group_perf.log
+    append: yes
+
+  # packet profiling
+  packets:
+
+    # Profiling can be disabled here, but it will still have a
+    # performance impact if compiled in.
+    enabled: yes
+    filename: packet_stats.log
+    append: yes
+
+    # per packet csv output
+    csv:
+
+      # Output can be disabled here, but it will still have a
+      # performance impact if compiled in.
+      enabled: no
+      filename: packet_stats.csv
+
+  # profiling of locking. Only available when Suricata was built with
+  # --enable-profiling-locks.
+  locks:
+    enabled: no
+    filename: lock_stats.log
+    append: yes
+
+  pcap-log:
+    enabled: no
+    filename: pcaplog_stats.log
+    append: yes
+
+nfq:
+#  mode: accept
+
+nflog:
+    # netlink multicast group
+    # (the same as the iptables --nflog-group param)
+    # Group 0 is used by the kernel, so you can't use it
+  - group: 2
+    # netlink buffer size
+    buffer-size: 18432
+    # put default value here
+  - group: default
+    # set number of packet to queue inside kernel
+    qthreshold: 1
+    # set the delay before flushing packet in the queue inside kernel
+    qtimeout: 100
+    # netlink max buffer size
+    max-size: 20000
+
+
+# general settings affecting packet capture
+capture:
+  # disable NIC offloading. It's restored when Suricata exits.
+  # Enabled by default.
+  #disable-offloading: false
+  #
+  # disable checksum validation. Same as setting '-k none' on the
+  # commandline.
+  #checksum-validation: none
+
+# Netmap support
+#
+# Netmap operates with NIC directly in driver, so you need FreeBSD which have
+# built-in netmap support or compile and install netmap module and appropriate
+# NIC driver on your Linux system.
+# To reach maximum throughput disable all receive-, segmentation-,
+# checksum- offloadings on NIC.
+# Disabling Tx checksum offloading is *required* for connecting OS endpoint
+# with NIC endpoint.
+# You can find more information at https://github.com/luigirizzo/netmap
+#
+netmap:
+   # To specify OS endpoint add plus sign at the end (e.g. "eth0+")
+ - interface: eth2
+ - interface: default
+
+# PF_RING configuration. for use with native PF_RING support
+# for more info see http://www.ntop.org/products/pf_ring/
+pfring:
+  - interface: eth0
+    # Number of receive threads. If set to 'auto' Suricata will first try
+    # to use CPU (core) count and otherwise RSS queue count.
+    threads: auto
+
+    # Default clusterid.  PF_RING will load balance packets based on flow.
+    # All threads/processes that will participate need to have the same
+    # clusterid.
+    cluster-id: 99
+
+    # Default PF_RING cluster type. PF_RING can load balance per flow.
+    # Possible values are cluster_flow or cluster_round_robin.
+    cluster-type: cluster_flow
+
+    # bpf filter for this interface
+    #bpf-filter: tcp
+
+    # If bypass is set then the PF_RING hw bypass is activated, when supported
+    # by the interface in use. Suricata will instruct the interface to bypass
+    # all future packets for a flow that need to be bypassed.
+    #bypass: yes
+
+    # Choose checksum verification mode for the interface. At the moment
+    # of the capture, some packets may be with an invalid checksum due to
+    # offloading to the network card of the checksum computation.
+    # Possible values are:
+    #  - rxonly: only compute checksum for packets received by network card.
+    #  - yes: checksum validation is forced
+    #  - no: checksum validation is disabled
+    #  - auto: Suricata uses a statistical approach to detect when
+    #  checksum off-loading is used. (default)
+    # Warning: 'checksum-validation' must be set to yes to have any validation
+    #checksum-checks: auto
+  # Second interface
+  #- interface: eth1
+  #  threads: 3
+  #  cluster-id: 93
+  #  cluster-type: cluster_flow
+  # Put default values here
+  - interface: default
+    #threads: 2
+
+# For FreeBSD ipfw(8) divert(4) support.
+# Please make sure you have ipfw_load="YES" and ipdivert_load="YES"
+# in /etc/loader.conf or kldload'ing the appropriate kernel modules.
+# Additionally, you need to have an ipfw rule for the engine to see
+# the packets from ipfw.  For Example:
+#
+#   ipfw add 100 divert 8000 ip from any to any
+#
+# The 8000 above should be the same number you passed on the command
+# line, i.e. -d 8000
+#
+ipfw:
+
+  # Reinject packets at the specified ipfw rule number.  This config
+  # option is the ipfw rule number AT WHICH rule processing continues
+  # in the ipfw processing system after the engine has finished
+  # inspecting the packet for acceptance.  If no rule number is specified,
+  # accepted packets are reinjected at the divert rule which they entered
+  # and IPFW rule processing continues.  No check is done to verify
+  # this will rule makes sense so care must be taken to avoid loops in ipfw.
+  #
+  # back into the ipfw firewall AT rule number 5500:
+  #
+  # ipfw-reinjection-rule-number: 5500
+
+
+napatech:
+    # The Host Buffer Allowance for all streams
+    # (-1 = OFF, 1 - 100 = percentage of the host buffer that can be held back)
+    # This may be enabled when sharing streams with another application.
+    # Otherwise, it should be turned off.
+    hba: -1
+
+    # use_all_streams set to "yes" will query the Napatech service for all configured
+    # streams and listen on all of them. When set to "no" the streams config array
+    # will be used.
+    use-all-streams: yes
+
+    # The streams to listen on.  This can be either:
+    #   a list of individual streams (e.g. streams: [0,1,2,3])
+    # or
+    #   a range of streams (e.g. streams: ["0-3"])
+    streams: ["0-3"]
+
+# Tilera mpipe configuration. for use on Tilera TILE-Gx.
+mpipe:
+
+  # Load balancing modes: "static", "dynamic", "sticky", or "round-robin".
+  load-balance: dynamic
+
+  # Number of Packets in each ingress packet queue. Must be 128, 512, 2028 or 65536
+  iqueue-packets: 2048
+
+  # List of interfaces we will listen on.
+  inputs:
+  - interface: xgbe2
+  - interface: xgbe3
+  - interface: xgbe4
+
+
+  # Relative weight of memory for packets of each mPipe buffer size.
+  stack:
+    size128: 0
+    size256: 9
+    size512: 0
+    size1024: 0
+    size1664: 7
+    size4096: 0
+    size10386: 0
+    size16384: 0
+
+default-rule-path: /var/lib/suricata/rules
+rule-files:
+ - suricata.rules
+
+classification-file: /etc/suricata/classification.config
+reference-config-file: /etc/suricata/reference.config
+

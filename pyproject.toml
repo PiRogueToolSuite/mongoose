@@ -1,13 +1,14 @@
 [build-system]
 build-backend = "hatchling.build"
 
-requires = [ "hatchling", "uv-dynamic-versioning" ]
+requires = [ "hatchling" ]
 
 [tool.hatch.build.targets.wheel]
 packages = ["mongoose"]
 
 [project]
 name = "pts-mongoose"
+version = "1.0.0"
 description = "Helpers to collect, enrich and store Suricata events and network flows."
 readme = "README.md"
 license = "GPL-3.0-or-later"
@@ -18,14 +19,7 @@ authors = [
   { name = "U+039b", email = "hello@pts-project.org" },
 ]
 requires-python = ">=3.11"
-classifiers = [
-  "Programming Language :: Python :: 3 :: Only",
-  "Programming Language :: Python :: 3.11",
-  "Programming Language :: Python :: 3.12",
-  "Programming Language :: Python :: 3.13",
-]
 
-dynamic = [ "version" ]
 dependencies = [
   "communityid==1.4",
   "geoip2==2.9",
@@ -47,7 +41,6 @@ dev = [
   "ruff",
   "tox",
   "tox-uv",
-  "uv-dynamic-versioning",
 ]
 test = [
   "coverage",
@@ -84,9 +77,6 @@ only-include = [
   "LICENSE",
   "README.md",
 ]
-
-[tool.hatch.version]
-source = "uv-dynamic-versioning"
 
 [tool.ruff]
 target-version = "py312"

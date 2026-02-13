@@ -1,4 +1,4 @@
-mongoose (1.0.0) bookworm; urgency=medium
+pirogue-mongoose (1.0.0) bookworm; urgency=medium
 
   * Initial release
 

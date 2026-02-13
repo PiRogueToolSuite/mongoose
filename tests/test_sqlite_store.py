@@ -10,12 +10,12 @@ from mongoose.models import NetworkAlert, NetworkAlertTable, NetworkFlow, Networ
 
 @pytest.fixture
 def db_path():
-    path = "test_mongoose.db"
+    path = "mongoose.db"
     if os.path.exists(path):
         os.remove(path)
     yield path
-    # if os.path.exists(path):
-    #     os.remove(path)
+    if os.path.exists(path):
+        os.remove(path)
 
 
 @pytest.fixture(autouse=True)
