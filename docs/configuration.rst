@@ -107,7 +107,6 @@ Example::
       nf_stream:
         interface: eth0
         active_timeout: 120
-        max_nflows: 0
         enable: true
 
 Supported settings
@@ -122,7 +121,6 @@ collector.suricata
 collector.nf_stream
   - ``interface``: Network interface to capture from.
   - ``active_timeout``: Seconds before an active flow is considered expired.
-  - ``max_nflows``: Limit on number of flows to capture (0 = unlimited).
   - ``enable``: Toggle NFStream collector on or off.
 
 .. _configuration-enrichment:
