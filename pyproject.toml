@@ -7,7 +7,7 @@ requires = [ "hatchling" ]
 packages = ["mongoose"]
 
 [project]
-name = "pts-mongoose"
+name = "pirogue-mongoose"
 version = "1.0.0"
 description = "Helpers to collect, enrich and store Suricata events and network flows."
 readme = "README.md"
