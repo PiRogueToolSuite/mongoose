@@ -35,8 +35,7 @@ class NFStreamCollector(Thread):
 
         Args:
             configuration: An `NFStreamConfiguration` instance
-                containing `interface`, `active_timeout`, and
-                `max_nflows` values.
+                containing `interface`, `active_timeout`.
         """
         super().__init__()
         self.daemon = True
@@ -91,7 +90,7 @@ class NFStreamCollector(Thread):
 
         This method:
             - Creates an `NFStreamer` configured with `interface`,
-              `active_timeout`, and `max_nflows` from `configuration`.
+              `active_timeout`.
             - Iterates flows emitted by `NFStreamer`, converts them
               to `NetworkDPI` objects (excluding the `id` field),
               resolves the protocol keyword, and publishes each flow
@@ -104,7 +103,6 @@ class NFStreamCollector(Thread):
                 source=self.configuration.interface,
                 active_timeout=self.configuration.active_timeout,
                 idle_timeout=30,
-                max_nflows=self.configuration.max_nflows,
             )
         except (Exception,):
             logger.exception("Failed to create NFStreamer, stopping here")

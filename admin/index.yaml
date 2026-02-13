@@ -15,5 +15,5 @@ files:
     variables:
       - name: ISOLATED_INTERFACE
     actions:
-      - systemctl restart mongoose 
+      - systemctl restart pirogue-mongoose 
 
