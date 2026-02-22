@@ -28,6 +28,7 @@ dependencies = [
   "pyyaml>=6.0.3",
   "requests==2.28.1",
   "sqlalchemy==1.4.46",
+  "watchdog==2.2.1",
 ]
 
 scripts.mongoosed = "mongoose.entrypoints.cmd:main_cli"

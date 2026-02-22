@@ -23,6 +23,9 @@ class WebhookForwarderConfiguration(BaseModel):
     url: Union[HttpUrl, str]
     """The destination URL for the webhook (must be a valid HTTP/HTTPS URL)."""
 
+    configuration_file: Path = None
+    """Configuration file path, only set when loaded from a drop-in configuration."""
+
     headers: Dict[str, str] = Field(default_factory=dict)
     """Optional dictionary of additional HTTP headers to include in requests."""
 

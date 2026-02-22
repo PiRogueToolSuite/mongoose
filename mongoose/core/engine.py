@@ -1,21 +1,22 @@
 import logging
 import threading
-
-import yaml
 from typing import List, Optional, Type, Dict
 
+import yaml
+
+import mongoose.core.cache as cache_module
+from mongoose.collect.nfstream_collector import NFStreamCollector
+from mongoose.collect.suricata_eve_collector import SuricataEveCollector
 from mongoose.core.cache import SeverityCache
 from mongoose.core.processing import ProcessingQueue
 from mongoose.core.sink import Sink
-from mongoose.forward.discord import DiscordForwarder
-from mongoose.models.configuration import Configuration, WebhookForwarderConfiguration, ForwarderConfiguration
-from mongoose.collect.nfstream_collector import NFStreamCollector
-from mongoose.collect.suricata_eve_collector import SuricataEveCollector
+from mongoose.core.watchdogs import DropInConfigurationWatcher, DropInConfigurationHandler
 from mongoose.enrich.base import Enrich
+from mongoose.forward.discord import DiscordForwarder
 from mongoose.forward.file import FileForwarder
 from mongoose.forward.webhook import WebhookForwarder
+from mongoose.models.configuration import Configuration, WebhookForwarderConfiguration, ForwarderConfiguration
 from mongoose.store.sqlite import SqliteStore
-import mongoose.core.cache as cache_module
 
 logger = logging.getLogger(__name__)
 
@@ -64,6 +65,13 @@ class Engine(metaclass=Singleton):
         self._setup_components()
         self.started = False
         self.thread_id = threading.get_ident()
+        self.webhook_configuration_watcher = DropInConfigurationWatcher(
+            self.config.extra_configuration_dir / "webhook.d",
+            DropInConfigurationHandler(
+                WebhookForwarderConfiguration,
+                self._handle_webhook_configuration_changes
+            )
+        )
 
     def load_extra_config(self, name: str, config_class: Type):
         configurations = []
@@ -74,8 +82,30 @@ class Engine(metaclass=Singleton):
                     with config_file.open(mode="r") as f:
                         config_data = yaml.safe_load(f)
                     if config_data:
+                        config_data["configuration_file"] = config_file
                         configurations.append(config_class(**config_data))
+            else:
+                config_dir.mkdir(parents=True, exist_ok=True)
+
         return configurations
+
+    def _handle_webhook_configuration_changes(self, created, modified, deleted):
+        to_remove = []
+        for forwarder in self.forwarders:
+            if not isinstance(forwarder, WebhookForwarder):
+                continue
+            for modified_config in modified:
+                if forwarder.config.configuration_file == modified_config.configuration_file:
+                    forwarder.config = modified_config
+            if forwarder.config.configuration_file in deleted:
+                forwarder.disable()
+                to_remove.append(forwarder)
+        for removed in to_remove:
+            self.forwarders.remove(removed)
+        for new_config in created:
+            webhook = WebhookForwarder(new_config)
+            webhook.start()
+            self.forwarders.append(webhook)
 
     def load_config(self):
         """Load configuration from the YAML file."""
@@ -161,6 +191,8 @@ class Engine(metaclass=Singleton):
 
         # Reset the stop event in case it was set during a previous run
         self.processing_queue.stop_processing_event.clear()
+
+        self.webhook_configuration_watcher.run()
 
         self.sink.start()
         self.database_storage.start()

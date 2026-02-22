@@ -25,6 +25,7 @@ Depends:
  python3-numpy (>= 1:1.22),
  python3-pydantic,
  python3-yaml,
+ python3-watchdog,
  python3-requests,
  python3-sqlalchemy,
  python3-systemd,

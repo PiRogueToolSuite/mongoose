@@ -1684,6 +1684,107 @@ wheels = [
 ]
 
 [[package]]
+name = "pirogue-mongoose"
+version = "1.0.0"
+source = { editable = "." }
+dependencies = [
+    { name = "communityid" },
+    { name = "geoip2" },
+    { name = "nfstream" },
+    { name = "pydantic" },
+    { name = "pyyaml" },
+    { name = "requests" },
+    { name = "sqlalchemy" },
+    { name = "watchdog" },
+]
+
+[package.dev-dependencies]
+dev = [
+    { name = "hatchling" },
+    { name = "mypy" },
+    { name = "pre-commit-uv" },
+    { name = "pytest" },
+    { name = "ruff" },
+    { name = "tox" },
+    { name = "tox-uv" },
+]
+docs = [
+    { name = "autoclasstoc" },
+    { name = "myst-parser" },
+    { name = "sphinx" },
+    { name = "sphinx-autobuild" },
+    { name = "sphinx-copybutton" },
+    { name = "sphinx-hoverxref" },
+    { name = "sphinx-jsonschema" },
+    { name = "sphinx-needs" },
+    { name = "sphinx-notfound-page" },
+    { name = "sphinx-pydantic" },
+    { name = "sphinx-rtd-theme" },
+    { name = "sphinx-sqlalchemy" },
+    { name = "sphinx-toolbox" },
+    { name = "sphinxcontrib-datatemplates" },
+    { name = "sphinxcontrib-mermaid" },
+]
+test = [
+    { name = "coverage" },
+    { name = "hatchling" },
+    { name = "mypy" },
+    { name = "pytest" },
+    { name = "pytest-cov" },
+    { name = "pytest-md-report" },
+    { name = "sphinx" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "communityid", specifier = "==1.4" },
+    { name = "geoip2", specifier = "==2.9" },
+    { name = "nfstream", specifier = "==6.5.4" },
+    { name = "pydantic", specifier = "==1.10.4" },
+    { name = "pyyaml", specifier = ">=6.0.3" },
+    { name = "requests", specifier = "==2.28.1" },
+    { name = "sqlalchemy", specifier = "==1.4.46" },
+    { name = "watchdog", specifier = "==2.2.1" },
+]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "hatchling" },
+    { name = "mypy" },
+    { name = "pre-commit-uv" },
+    { name = "pytest" },
+    { name = "ruff" },
+    { name = "tox" },
+    { name = "tox-uv" },
+]
+docs = [
+    { name = "autoclasstoc" },
+    { name = "myst-parser" },
+    { name = "sphinx" },
+    { name = "sphinx-autobuild" },
+    { name = "sphinx-copybutton" },
+    { name = "sphinx-hoverxref" },
+    { name = "sphinx-jsonschema" },
+    { name = "sphinx-needs" },
+    { name = "sphinx-notfound-page" },
+    { name = "sphinx-pydantic" },
+    { name = "sphinx-rtd-theme" },
+    { name = "sphinx-sqlalchemy" },
+    { name = "sphinx-toolbox" },
+    { name = "sphinxcontrib-datatemplates" },
+    { name = "sphinxcontrib-mermaid" },
+]
+test = [
+    { name = "coverage" },
+    { name = "hatchling" },
+    { name = "mypy" },
+    { name = "pytest" },
+    { name = "pytest-cov" },
+    { name = "pytest-md-report" },
+    { name = "sphinx" },
+]
+
+[[package]]
 name = "platformdirs"
 version = "4.5.1"
 source = { registry = "https://pypi.org/simple" }
@@ -1756,105 +1857,6 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/1c/15/dd6fd869753ce82ff64dcbc18356093471a5a5adf4f77ed1f805d473d859/psutil-7.2.1-cp36-abi3-musllinux_1_2_x86_64.whl", hash = "sha256:99a4cd17a5fdd1f3d014396502daa70b5ec21bf4ffe38393e152f8e449757d67", size = 147402, upload-time = "2025-12-29T08:26:39.21Z" },
     { url = "https://files.pythonhosted.org/packages/34/68/d9317542e3f2b180c4306e3f45d3c922d7e86d8ce39f941bb9e2e9d8599e/psutil-7.2.1-cp37-abi3-win_amd64.whl", hash = "sha256:b1b0671619343aa71c20ff9767eced0483e4fc9e1f489d50923738caf6a03c17", size = 136938, upload-time = "2025-12-29T08:26:41.036Z" },
     { url = "https://files.pythonhosted.org/packages/3e/73/2ce007f4198c80fcf2cb24c169884f833fe93fbc03d55d302627b094ee91/psutil-7.2.1-cp37-abi3-win_arm64.whl", hash = "sha256:0d67c1822c355aa6f7314d92018fb4268a76668a536f133599b91edd48759442", size = 133836, upload-time = "2025-12-29T08:26:43.086Z" },
-]
-
-[[package]]
-name = "pts-mongoose"
-version = "1.0.0"
-source = { editable = "." }
-dependencies = [
-    { name = "communityid" },
-    { name = "geoip2" },
-    { name = "nfstream" },
-    { name = "pydantic" },
-    { name = "pyyaml" },
-    { name = "requests" },
-    { name = "sqlalchemy" },
-]
-
-[package.dev-dependencies]
-dev = [
-    { name = "hatchling" },
-    { name = "mypy" },
-    { name = "pre-commit-uv" },
-    { name = "pytest" },
-    { name = "ruff" },
-    { name = "tox" },
-    { name = "tox-uv" },
-]
-docs = [
-    { name = "autoclasstoc" },
-    { name = "myst-parser" },
-    { name = "sphinx" },
-    { name = "sphinx-autobuild" },
-    { name = "sphinx-copybutton" },
-    { name = "sphinx-hoverxref" },
-    { name = "sphinx-jsonschema" },
-    { name = "sphinx-needs" },
-    { name = "sphinx-notfound-page" },
-    { name = "sphinx-pydantic" },
-    { name = "sphinx-rtd-theme" },
-    { name = "sphinx-sqlalchemy" },
-    { name = "sphinx-toolbox" },
-    { name = "sphinxcontrib-datatemplates" },
-    { name = "sphinxcontrib-mermaid" },
-]
-test = [
-    { name = "coverage" },
-    { name = "hatchling" },
-    { name = "mypy" },
-    { name = "pytest" },
-    { name = "pytest-cov" },
-    { name = "pytest-md-report" },
-    { name = "sphinx" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "communityid", specifier = "==1.4" },
-    { name = "geoip2", specifier = "==2.9" },
-    { name = "nfstream", specifier = "==6.5.4" },
-    { name = "pydantic", specifier = "==1.10.4" },
-    { name = "pyyaml", specifier = ">=6.0.3" },
-    { name = "requests", specifier = "==2.28.1" },
-    { name = "sqlalchemy", specifier = "==1.4.46" },
-]
-
-[package.metadata.requires-dev]
-dev = [
-    { name = "hatchling" },
-    { name = "mypy" },
-    { name = "pre-commit-uv" },
-    { name = "pytest" },
-    { name = "ruff" },
-    { name = "tox" },
-    { name = "tox-uv" },
-]
-docs = [
-    { name = "autoclasstoc" },
-    { name = "myst-parser" },
-    { name = "sphinx" },
-    { name = "sphinx-autobuild" },
-    { name = "sphinx-copybutton" },
-    { name = "sphinx-hoverxref" },
-    { name = "sphinx-jsonschema" },
-    { name = "sphinx-needs" },
-    { name = "sphinx-notfound-page" },
-    { name = "sphinx-pydantic" },
-    { name = "sphinx-rtd-theme" },
-    { name = "sphinx-sqlalchemy" },
-    { name = "sphinx-toolbox" },
-    { name = "sphinxcontrib-datatemplates" },
-    { name = "sphinxcontrib-mermaid" },
-]
-test = [
-    { name = "coverage" },
-    { name = "hatchling" },
-    { name = "mypy" },
-    { name = "pytest" },
-    { name = "pytest-cov" },
-    { name = "pytest-md-report" },
-    { name = "sphinx" },
 ]
 
 [[package]]
@@ -2961,6 +2963,27 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/aa/a3/4d310fa5f00863544e1d0f4de93bddec248499ccf97d4791bc3122c9d4f3/virtualenv-20.36.1.tar.gz", hash = "sha256:8befb5c81842c641f8ee658481e42641c68b5eab3521d8e092d18320902466ba", size = 6032239, upload-time = "2026-01-09T18:21:01.296Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/6a/2a/dc2228b2888f51192c7dc766106cd475f1b768c10caaf9727659726f7391/virtualenv-20.36.1-py3-none-any.whl", hash = "sha256:575a8d6b124ef88f6f51d56d656132389f961062a9177016a50e4f507bbcc19f", size = 6008258, upload-time = "2026-01-09T18:20:59.425Z" },
+]
+
+[[package]]
+name = "watchdog"
+version = "2.2.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/11/6f/0396d373e039b89c60e23a1a9025edc6dd203121fe0af7d1427e85d5ec98/watchdog-2.2.1.tar.gz", hash = "sha256:cdcc23c9528601a8a293eb4369cbd14f6b4f34f07ae8769421252e9c22718b6f", size = 119871, upload-time = "2023-01-01T09:52:18.308Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/c2/47/065694b16c4e227b5a9b058f904c765a9a0d174c36db7bb34c915a37e324/watchdog-2.2.1-cp311-cp311-macosx_10_9_universal2.whl", hash = "sha256:102a60093090fc3ff76c983367b19849b7cc24ec414a43c0333680106e62aae1", size = 97610, upload-time = "2023-01-01T09:51:40.539Z" },
+    { url = "https://files.pythonhosted.org/packages/2b/b3/2ba384d62be9928ea3477cd1247e5254d90f9e985c6a1fb4a69d9462463f/watchdog-2.2.1-cp311-cp311-macosx_10_9_x86_64.whl", hash = "sha256:748ca797ff59962e83cc8e4b233f87113f3cf247c23e6be58b8a2885c7337aa3", size = 88168, upload-time = "2023-01-01T09:51:42.037Z" },
+    { url = "https://files.pythonhosted.org/packages/50/c3/eea5d31079b436ec89522ca03d3a8e9fa616389b0ee173892dfbd23f5166/watchdog-2.2.1-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:6ccd8d84b9490a82b51b230740468116b8205822ea5fdc700a553d92661253a3", size = 88674, upload-time = "2023-01-01T09:51:43.861Z" },
+    { url = "https://files.pythonhosted.org/packages/88/d2/351134b5ff88b4e1a6b578cd4a83a8fe2abd4599190560d36da11c1127d4/watchdog-2.2.1-py3-none-manylinux2014_aarch64.whl", hash = "sha256:978a1aed55de0b807913b7482d09943b23a2d634040b112bdf31811a422f6344", size = 78974, upload-time = "2023-01-01T09:52:03.02Z" },
+    { url = "https://files.pythonhosted.org/packages/5d/c2/cabcca89b050ee704785365a30586e07de3fe101cba6276ca3aba145e0eb/watchdog-2.2.1-py3-none-manylinux2014_armv7l.whl", hash = "sha256:8c28c23972ec9c524967895ccb1954bc6f6d4a557d36e681a36e84368660c4ce", size = 78974, upload-time = "2023-01-01T09:52:04.592Z" },
+    { url = "https://files.pythonhosted.org/packages/cb/3f/e9b10c8693d2e3a4d94a6ed7ae42391cf169d23523f9165b94151f321d88/watchdog-2.2.1-py3-none-manylinux2014_i686.whl", hash = "sha256:c27d8c1535fd4474e40a4b5e01f4ba6720bac58e6751c667895cbc5c8a7af33c", size = 78973, upload-time = "2023-01-01T09:52:05.933Z" },
+    { url = "https://files.pythonhosted.org/packages/2c/9c/bd6427901e99cd659f4e40092cee2fd668e1d367c5b23059f7128f90fa9c/watchdog-2.2.1-py3-none-manylinux2014_ppc64.whl", hash = "sha256:d6b87477752bd86ac5392ecb9eeed92b416898c30bd40c7e2dd03c3146105646", size = 78972, upload-time = "2023-01-01T09:52:07.423Z" },
+    { url = "https://files.pythonhosted.org/packages/23/7a/436bca74f15d70c16f9db13cbf449f41af65b59e9897b6ffb453c4a91db2/watchdog-2.2.1-py3-none-manylinux2014_ppc64le.whl", hash = "sha256:cece1aa596027ff56369f0b50a9de209920e1df9ac6d02c7f9e5d8162eb4f02b", size = 78974, upload-time = "2023-01-01T09:52:08.789Z" },
+    { url = "https://files.pythonhosted.org/packages/77/d0/455f2942c23283a0a9e759f289fabd33dc091d8c31bf507ba6cbfc77b266/watchdog-2.2.1-py3-none-manylinux2014_s390x.whl", hash = "sha256:8b5cde14e5c72b2df5d074774bdff69e9b55da77e102a91f36ef26ca35f9819c", size = 78973, upload-time = "2023-01-01T09:52:10.237Z" },
+    { url = "https://files.pythonhosted.org/packages/6f/94/b777029fdc7b1353e24ddc9f9f9bc0fe7788e684d036db20ded1a1b07aa6/watchdog-2.2.1-py3-none-manylinux2014_x86_64.whl", hash = "sha256:e038be858425c4f621900b8ff1a3a1330d9edcfeaa1c0468aeb7e330fb87693e", size = 78975, upload-time = "2023-01-01T09:52:11.771Z" },
+    { url = "https://files.pythonhosted.org/packages/97/98/706978058d61948868d42a42135b5a8caaecf40513711fa6a7734db8d60f/watchdog-2.2.1-py3-none-win32.whl", hash = "sha256:bc43c1b24d2f86b6e1cc15f68635a959388219426109233e606517ff7d0a5a73", size = 78959, upload-time = "2023-01-01T09:52:13.299Z" },
+    { url = "https://files.pythonhosted.org/packages/6d/7f/8deebfbec704ab40e2fe9064c1b157a9a7cd7061f64f7164fe5f902ce0fc/watchdog-2.2.1-py3-none-win_amd64.whl", hash = "sha256:17f1708f7410af92ddf591e94ae71a27a13974559e72f7e9fde3ec174b26ba2e", size = 78963, upload-time = "2023-01-01T09:52:14.601Z" },
+    { url = "https://files.pythonhosted.org/packages/56/3e/2e21594c93a4dd8c8ffc7ea4276adab7cb027f836e8bbf293bec640020e0/watchdog-2.2.1-py3-none-win_ia64.whl", hash = "sha256:195ab1d9d611a4c1e5311cbf42273bc541e18ea8c32712f2fb703cfc6ff006f9", size = 78962, upload-time = "2023-01-01T09:52:15.926Z" },
 ]
 
 [[package]]

@@ -141,7 +141,7 @@ class WebhookForwarder(BaseForwarder):
         """
         last_periodic_send = time.time()
 
-        while not self.processing_queue.processing_stopped():
+        while not self.processing_queue.processing_stopped() and self.config.enable:
             try:
                 if self.config.mode == "immediate":
                     data = self.queue.get(timeout=1.0)
@@ -217,7 +217,6 @@ class WebhookForwarder(BaseForwarder):
         # If it's a single item and NOT periodic/bulk, we might want to send it as is,
         # but for consistency and simplicity in bulk/periodic we send it as a list if there are multiple.
         # However, many webhooks expect a single object or a list.
-
         data_to_send = payloads if len(payloads) > 1 or self.config.mode != "immediate" else payloads[0]
 
         for attempt in range(self.config.retry_count + 1):
@@ -229,6 +228,10 @@ class WebhookForwarder(BaseForwarder):
                 if not self._should_retry(e, attempt):
                     break
                 time.sleep(self.config.retry_delay)
+
+    def disable(self):
+        """Disable the forwarder."""
+        self.config.enable = False
 
     def forward(self, data: Any):
         """Send formatted data to the webhook URL with retries.
