@@ -9,7 +9,7 @@ Restart=on-failure
 RestartSec=2
 Type=notify
 KillSignal=SIGTERM
-TimeoutStopSec=30
+TimeoutStopSec=10
 KillMode=control-group
 
 [Install]
