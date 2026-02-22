@@ -8,8 +8,8 @@ from pydantic import SecretStr
 
 from mongoose.core.processing import ProcessingQueue, ProcessingTopic
 from mongoose.forward.webhook import WebhookForwarder, WebhookFormatter
-from mongoose.models.configuration import WebhookForwarderConfiguration
 from mongoose.models import NetworkAlert
+from mongoose.models.configuration import WebhookForwarderConfiguration
 
 
 class WebhookReceiverMock:
@@ -99,7 +99,12 @@ def test_webhook_formatter_alert():
 
 
 def test_webhook_forwarder_basic_flow(webhook_receiver):
-    config = WebhookForwarderConfiguration(url="http://example.com/webhook", retry_count=0, topics=["network-alert"])
+    config = WebhookForwarderConfiguration(
+        enable=True,
+        url="http://example.com/webhook",
+        retry_count=0,
+        topics=["network-alert"]
+    )
 
     pq = ProcessingQueue()
     forwarder = WebhookForwarder(config)
@@ -138,7 +143,11 @@ def test_webhook_forwarder_basic_flow(webhook_receiver):
 
 def test_webhook_forwarder_auth_bearer():
     config = WebhookForwarderConfiguration(
-        url="http://example.com/webhook", auth_type="bearer", auth_token=SecretStr("mytoken"), topics=["network-alert"]
+        enable=True,
+        url="http://example.com/webhook",
+        auth_type="bearer",
+        auth_token=SecretStr("mytoken"),
+        topics=["network-alert"]
     )
 
     forwarder = WebhookForwarder(config)
@@ -147,6 +156,7 @@ def test_webhook_forwarder_auth_bearer():
 
 def test_webhook_forwarder_auth_header():
     config = WebhookForwarderConfiguration(
+        enable=True,
         url="http://example.com/webhook",
         auth_type="header",
         auth_token=SecretStr("my-api-key"),
@@ -160,7 +170,9 @@ def test_webhook_forwarder_auth_header():
 
 def test_webhook_forwarder_retries(webhook_receiver):
     config = WebhookForwarderConfiguration(
-        url="http://example.com/webhook", retry_count=1, retry_delay=0.1, topics=["network-alert"]
+        enable=True,
+        url="http://example.com/webhook", retry_count=1, retry_delay=0.1,
+        topics=["network-alert"]
     )
 
     pq = ProcessingQueue()
@@ -198,18 +210,23 @@ def test_webhook_forwarder_retries(webhook_receiver):
 
 def test_webhook_configuration_validation():
     with pytest.raises(ValueError, match="auth_type must be one of"):
-        WebhookForwarderConfiguration(url="http://example.com", auth_type="invalid")
+        WebhookForwarderConfiguration(enable=True, url="http://example.com", auth_type="invalid")
 
     with pytest.raises(ValueError, match="auth_token is required"):
-        WebhookForwarderConfiguration(url="http://example.com", auth_type="bearer")
+        WebhookForwarderConfiguration(enable=True, url="http://example.com", auth_type="bearer")
 
     with pytest.raises(ValueError, match="must be in 'user:pass' format"):
-        WebhookForwarderConfiguration(url="http://example.com", auth_type="basic", auth_token=SecretStr("not-a-pair"))
+        WebhookForwarderConfiguration(enable=True, url="http://example.com", auth_type="basic",
+                                      auth_token=SecretStr("not-a-pair"))
 
 
 def test_webhook_forwarder_bulk_mode(webhook_receiver):
     config = WebhookForwarderConfiguration(
-        url="http://example.com/webhook", mode="bulk", bulk_size=2, topics=["network-alert"]
+        enable=True,
+        url="http://example.com/webhook",
+        mode="bulk",
+        bulk_size=2,
+        topics=["network-alert"]
     )
 
     pq = ProcessingQueue()
@@ -251,6 +268,7 @@ def test_webhook_forwarder_bulk_mode(webhook_receiver):
 
 def test_webhook_forwarder_periodic_mode(webhook_receiver):
     config = WebhookForwarderConfiguration(
+        enable=True,
         url="http://example.com/webhook",
         mode="periodic",
         periodic_interval=0.5,

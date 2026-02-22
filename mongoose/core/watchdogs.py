@@ -1,12 +1,10 @@
+import logging
 from pathlib import Path
 from typing import Type, Callable, List
 
 import yaml
-import logging
 from watchdog.events import FileSystemEventHandler, FileSystemEvent
 from watchdog.observers import Observer
-
-from mongoose.core.processing import ProcessingQueue
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +19,8 @@ class DropInConfigurationWatcher:
         logger.info(f"Starting drop-in configuration watcher on {self.configuration_dir}")
         self.observer.schedule(self.event_handler, str(self.configuration_dir), recursive=True)
         self.observer.start()
-        ProcessingQueue().stop_processing_event.wait()
+
+    def stop(self):
         self.observer.stop()
         self.observer.join()
 

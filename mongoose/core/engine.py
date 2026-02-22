@@ -67,10 +67,7 @@ class Engine(metaclass=Singleton):
         self.thread_id = threading.get_ident()
         self.webhook_configuration_watcher = DropInConfigurationWatcher(
             self.config.extra_configuration_dir / "webhook.d",
-            DropInConfigurationHandler(
-                WebhookForwarderConfiguration,
-                self._handle_webhook_configuration_changes
-            )
+            DropInConfigurationHandler(WebhookForwarderConfiguration, self._handle_webhook_configuration_changes),
         )
 
     def load_extra_config(self, name: str, config_class: Type):
@@ -218,6 +215,7 @@ class Engine(metaclass=Singleton):
         self.started = False
 
         self.processing_queue.stop_processing()
+        self.webhook_configuration_watcher.stop()
 
         self.sink.stop()
         self.processing_queue.queues.clear()
