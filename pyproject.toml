@@ -3,9 +3,6 @@ build-backend = "hatchling.build"
 
 requires = [ "hatchling" ]
 
-[tool.hatch.build.targets.wheel]
-packages = ["mongoose"]
-
 [project]
 name = "pirogue-mongoose"
 version = "1.0.0"
@@ -20,6 +17,12 @@ authors = [
 ]
 requires-python = ">=3.11"
 
+classifiers = [
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+]
 dependencies = [
   "communityid==1.4",
   "geoip2==2.9",
@@ -70,6 +73,9 @@ docs = [
   "sphinxcontrib-datatemplates",
   "sphinxcontrib-mermaid",
 ]
+
+[tool.hatch.build.targets.wheel]
+packages = [ "mongoose" ]
 
 [tool.hatch.build.targets.sdist]
 ignore-vcs = true
