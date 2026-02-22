@@ -232,6 +232,7 @@ class WebhookForwarder(BaseForwarder):
     def disable(self):
         """Disable the forwarder."""
         self.config.enable = False
+        self.processing_queue.unsubscribe(self.subscriber_id)
 
     def forward(self, data: Any):
         """Send formatted data to the webhook URL with retries.

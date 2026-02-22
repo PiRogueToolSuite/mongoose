@@ -1,6 +1,6 @@
 import enum
-from collections import defaultdict
 import logging
+from collections import defaultdict
 from queue import Queue, Full
 from threading import Event
 from typing import Any, Dict, List
@@ -74,7 +74,6 @@ class ProcessingQueue:
                 q.put_nowait(data)
             except Full as e:
                 logger.error(f"Failed to publish data to {topic}: {e}")
-                raise e
 
     def subscribe(self, topic: ProcessingTopic | List[ProcessingTopic], subscriber_id: str, queue_size=100) -> Queue:
         """Subscribe to one or more topics and receive a dedicated queue for receiving data.
@@ -117,6 +116,29 @@ class ProcessingQueue:
             self.subscribers[subscriber_id][t] = q
             self.queues[t].append(q)
         return q
+
+    def unsubscribe(self, subscriber_id: str):
+        """Completely unsubscribe a subscriber and remove all associated queues.
+
+        This method removes the subscriber from all topics they were subscribed to
+        and cleans up their dedicated queues. If a topic has no more subscribers
+        after this operation, it is removed from the system.
+
+        Args:
+            subscriber_id: Unique identifier for the subscriber to unsubscribe.
+        """
+        logger.info(f"Unsubscribing {subscriber_id}")
+        if subscriber_id not in self.subscribers:
+            logger.warning(f"Subscriber {subscriber_id} not found")
+            return
+
+        subscribed_topics = self.subscribers.pop(subscriber_id)
+        for topic, q in subscribed_topics.items():
+            if topic in self.queues:
+                if q in self.queues[topic]:
+                    self.queues[topic].remove(q)
+                if not self.queues[topic]:
+                    del self.queues[topic]
 
     def stop_processing(self):
         """Signal all processing operations to stop.

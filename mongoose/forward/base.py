@@ -51,6 +51,10 @@ class BaseForwarder:
         self.thread: Optional[threading.Thread] = None
         self.queue = None
 
+    @property
+    def subscriber_id(self):
+        return f"{self.__class__.__name__.lower()}_{id(self)}"
+
     def start(self):
         """Start the forwarder worker thread.
 
@@ -66,8 +70,7 @@ class BaseForwarder:
             return
 
         # Unique subscriber ID to avoid collisions
-        subscriber_id = f"{self.__class__.__name__.lower()}_{id(self)}"
-        self.queue = self.processing_queue.subscribe(topics, subscriber_id=subscriber_id)
+        self.queue = self.processing_queue.subscribe(topics, subscriber_id=self.subscriber_id)
 
         self.thread = threading.Thread(target=self._run, daemon=True)
         self.thread.start()

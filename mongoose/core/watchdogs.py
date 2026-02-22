@@ -32,6 +32,8 @@ class DropInConfigurationHandler(FileSystemEventHandler):
         super().__init__()
 
     def _load_configuration(self, config_file: Path):
+        if not config_file.name.endswith(".yaml"):
+            return None
         with config_file.open(mode="r") as f:
             config_data = yaml.safe_load(f)
         if config_data:
@@ -53,10 +55,11 @@ class DropInConfigurationHandler(FileSystemEventHandler):
             new_configuration = self._load_configuration(src_file)
             if new_configuration:
                 created.append(new_configuration)
-        elif event.event_type == "modified":
-            new_configuration = self._load_configuration(src_file)
-            if new_configuration:
-                modified.append(new_configuration)
+        # Not supported yet
+        # elif event.event_type == "modified":
+        #     new_configuration = self._load_configuration(src_file)
+        #     if new_configuration:
+        #         modified.append(new_configuration)
         elif event.event_type == "deleted":
             deleted.append(src_file)
 
