@@ -1,10 +1,57 @@
 from pathlib import Path
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Optional, Union, Any
 
 from pydantic import BaseModel, Field, HttpUrl, SecretStr, validator
 
 
-class WebhookForwarderConfiguration(BaseModel):
+class BasicFilter(BaseModel):
+    """A filter that matches objects based on attribute values.
+
+    This filter checks if an object has a specific attribute and whether
+    the attribute's value is in a predefined list of allowed values.
+
+    Attributes:
+        attribute: The name of the attribute to check on the target object.
+        values: List of acceptable values for the attribute.
+    """
+
+    attribute: str
+    values: List[str]
+
+    def matches(self, obj: Any) -> bool:
+        """Check if the given object matches this filter.
+
+        The object matches if it has the specified attribute and the
+        attribute's value is in the list of allowed values.
+
+        Args:
+            obj: The object to check against this filter.
+
+        Returns:
+            True if the object has the attribute and its value is in the
+            allowed values list, False otherwise.
+        """
+        if not hasattr(obj, self.attribute):
+            return False
+        value = getattr(obj, self.attribute)
+        return value in self.values
+
+
+class ForwarderConfiguration(BaseModel):
+    enable: bool = Field(default=False)
+    """Enable the forwarder. Defaults to False."""
+
+    topics: List[str] = Field(default_factory=lambda: ["enriched-network-dpi", "enriched-network-alert"])
+    """List of topics to forward. Defaults to ["enriched-network-dpi", "enriched-network-alert"]."""
+
+    configuration_file: Path = None
+    """Configuration file path, only set when loaded from a drop-in configuration."""
+
+    filters: List[BasicFilter] = []
+    """List of filters. Defaults to []."""
+
+
+class WebhookForwarderConfiguration(ForwarderConfiguration):
     """Configuration for the Webhook Forwarder.
 
     This class defines the destination, authentication, and reliability settings
@@ -22,9 +69,6 @@ class WebhookForwarderConfiguration(BaseModel):
 
     url: Union[HttpUrl, str]
     """The destination URL for the webhook (must be a valid HTTP/HTTPS URL)."""
-
-    configuration_file: Path = None
-    """Configuration file path, only set when loaded from a drop-in configuration."""
 
     headers: Dict[str, str] = Field(default_factory=dict)
     """Optional dictionary of additional HTTP headers to include in requests."""
@@ -49,12 +93,6 @@ class WebhookForwarderConfiguration(BaseModel):
 
     timeout: float = Field(default=10.0, gt=0)
     """Request timeout in seconds. Defaults to 10.0."""
-
-    enable: bool = Field(default=False)
-    """Enable the forwarder. Defaults to False."""
-
-    topics: List[str] = Field(default_factory=lambda: ["enriched-network-dpi", "enriched-network-alert"])
-    """List of topics to forward. Defaults to ["enriched-network-dpi", "enriched-network-alert"]."""
 
     # Forwarding modes
     mode: str = Field(default="immediate")  # immediate, bulk, periodic
@@ -94,7 +132,7 @@ class WebhookForwarderConfiguration(BaseModel):
         return v
 
 
-class FileForwarderConfiguration(BaseModel):
+class FileForwarderConfiguration(ForwarderConfiguration):
     """Configuration for the File Forwarder."""
 
     output_dir: str = "output"

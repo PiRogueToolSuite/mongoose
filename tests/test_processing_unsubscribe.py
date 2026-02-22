@@ -22,7 +22,7 @@ def test_unsubscribe():
     assert len(pq.queues[topic]) == 1
 
     # Unsubscribe (method not yet implemented)
-    if hasattr(pq, 'unsubscribe'):
+    if hasattr(pq, "unsubscribe"):
         pq.unsubscribe(subscriber_id)
         assert subscriber_id not in pq.subscribers
         assert topic not in pq.queues or len(pq.queues[topic]) == 0

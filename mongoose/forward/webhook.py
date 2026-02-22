@@ -134,6 +134,24 @@ class WebhookForwarder(BaseForwarder):
         super().start()
         logger.info(f"Forwarding to {self.config.url} [mode={self.config.mode}]")
 
+    def match_filters(self, data):
+        """Check if data matches any configured filters.
+        Filters are applied using OR logic: if any filter matches, the data passes.
+        If no filters are configured, all data is allowed through.
+
+        Args:
+            data: The data object to check against configured filters.
+
+        Returns:
+            True if data passes filtering (matches at least one filter or no filters configured),
+            False otherwise.
+        """
+        matches = len(self.config.filters) == 0
+        for f in self.config.filters:
+            if f.matches(data):
+                matches = True
+        return matches
+
     def _run(self):
         """Main worker loop to process messages and forward them.
 
@@ -146,13 +164,15 @@ class WebhookForwarder(BaseForwarder):
                 if self.config.mode == "immediate":
                     data = self.queue.get(timeout=1.0)
                     if data is not None:
-                        self.forward(data)
+                        if self.match_filters(data):
+                            self.forward(data)
                         self.queue.task_done()
                 elif self.config.mode == "bulk":
                     try:
                         data = self.queue.get(timeout=1.0)
                         if data is not None:
-                            self._buffer.append(data)
+                            if self.match_filters(data):
+                                self._buffer.append(data)
                             if len(self._buffer) >= self.config.bulk_size:
                                 self._flush_buffer()
                             self.queue.task_done()
@@ -166,7 +186,8 @@ class WebhookForwarder(BaseForwarder):
                         while len(self._buffer) < self.config.periodic_rate * 2:  # Limit buffer growth
                             data = self.queue.get_nowait()
                             if data is not None:
-                                self._buffer.append(data)
+                                if self.match_filters(data):
+                                    self._buffer.append(data)
                                 self.queue.task_done()
                     except (Exception,):  # empty queue
                         pass
@@ -286,7 +307,3 @@ class WebhookForwarder(BaseForwarder):
                 f"Failed to forward data to {self.config.url} after {self.config.retry_count + 1} attempts: {exception}"
             )
         return False
-
-
-# Discord-specific forwarder implementation moved to `mongoose.forward.discord`.
-# See mongoose/forward/discord.py for the DiscordFormatter and DiscordForwarder

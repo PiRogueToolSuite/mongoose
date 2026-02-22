@@ -53,7 +53,7 @@ class DropInConfigurationHandler(FileSystemEventHandler):
             return
         elif event.event_type == "created":
             new_configuration = self._load_configuration(src_file)
-            if new_configuration:
+            if new_configuration and new_configuration.enable:
                 created.append(new_configuration)
         # Not supported yet
         # elif event.event_type == "modified":

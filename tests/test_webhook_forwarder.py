@@ -100,10 +100,7 @@ def test_webhook_formatter_alert():
 
 def test_webhook_forwarder_basic_flow(webhook_receiver):
     config = WebhookForwarderConfiguration(
-        enable=True,
-        url="http://example.com/webhook",
-        retry_count=0,
-        topics=["network-alert"]
+        enable=True, url="http://example.com/webhook", retry_count=0, topics=["network-alert"]
     )
 
     pq = ProcessingQueue()
@@ -147,7 +144,7 @@ def test_webhook_forwarder_auth_bearer():
         url="http://example.com/webhook",
         auth_type="bearer",
         auth_token=SecretStr("mytoken"),
-        topics=["network-alert"]
+        topics=["network-alert"],
     )
 
     forwarder = WebhookForwarder(config)
@@ -170,9 +167,7 @@ def test_webhook_forwarder_auth_header():
 
 def test_webhook_forwarder_retries(webhook_receiver):
     config = WebhookForwarderConfiguration(
-        enable=True,
-        url="http://example.com/webhook", retry_count=1, retry_delay=0.1,
-        topics=["network-alert"]
+        enable=True, url="http://example.com/webhook", retry_count=1, retry_delay=0.1, topics=["network-alert"]
     )
 
     pq = ProcessingQueue()
@@ -216,17 +211,14 @@ def test_webhook_configuration_validation():
         WebhookForwarderConfiguration(enable=True, url="http://example.com", auth_type="bearer")
 
     with pytest.raises(ValueError, match="must be in 'user:pass' format"):
-        WebhookForwarderConfiguration(enable=True, url="http://example.com", auth_type="basic",
-                                      auth_token=SecretStr("not-a-pair"))
+        WebhookForwarderConfiguration(
+            enable=True, url="http://example.com", auth_type="basic", auth_token=SecretStr("not-a-pair")
+        )
 
 
 def test_webhook_forwarder_bulk_mode(webhook_receiver):
     config = WebhookForwarderConfiguration(
-        enable=True,
-        url="http://example.com/webhook",
-        mode="bulk",
-        bulk_size=2,
-        topics=["network-alert"]
+        enable=True, url="http://example.com/webhook", mode="bulk", bulk_size=2, topics=["network-alert"]
     )
 
     pq = ProcessingQueue()
