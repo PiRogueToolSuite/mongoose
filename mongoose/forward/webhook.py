@@ -228,6 +228,7 @@ class WebhookForwarder(BaseForwarder):
                 if not self._should_retry(e, attempt):
                     break
                 time.sleep(self.config.retry_delay)
+        self.disable()
 
     def disable(self):
         """Disable the forwarder."""
