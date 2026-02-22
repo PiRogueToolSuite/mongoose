@@ -47,7 +47,7 @@ class DropInConfigurationHandler(FileSystemEventHandler):
         deleted: List[Path] = []
 
         src_file = Path(event.src_path)
-        logging.info(f"{src_file} {event.event_type}")
+        logger.info(f"{src_file} {event.event_type}")
 
         if event.is_directory:
             return
