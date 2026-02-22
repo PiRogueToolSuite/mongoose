@@ -51,7 +51,7 @@ class Engine(metaclass=Singleton):
     and managing their lifecycle (start, stop, reload).
     """
 
-    def __init__(self, config_path: str, interface: str = None):
+    def __init__(self, config_path: str, interface: str = None, watch_configuration_changes: bool = True):
         self.config_path = config_path
         self.config: Optional[Configuration] = None
         self.processing_queue = ProcessingQueue()
@@ -65,6 +65,7 @@ class Engine(metaclass=Singleton):
         self._setup_components()
         self.started = False
         self.thread_id = threading.get_ident()
+        self.watch_configuration_changes = watch_configuration_changes
         self.webhook_configuration_watcher = DropInConfigurationWatcher(
             self.config.extra_configuration_dir / "webhook.d",
             DropInConfigurationHandler(WebhookForwarderConfiguration, self._handle_webhook_configuration_changes),
@@ -189,7 +190,8 @@ class Engine(metaclass=Singleton):
         # Reset the stop event in case it was set during a previous run
         self.processing_queue.stop_processing_event.clear()
 
-        self.webhook_configuration_watcher.run()
+        if self.watch_configuration_changes:
+            self.webhook_configuration_watcher.run()
 
         self.sink.start()
         self.database_storage.start()
@@ -215,7 +217,9 @@ class Engine(metaclass=Singleton):
         self.started = False
 
         self.processing_queue.stop_processing()
-        self.webhook_configuration_watcher.stop()
+
+        if self.watch_configuration_changes:
+            self.webhook_configuration_watcher.stop()
 
         self.sink.stop()
         self.processing_queue.queues.clear()

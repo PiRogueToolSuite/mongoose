@@ -24,7 +24,7 @@ def test_engine_initialization(tmp_path):
     with open(config_file, "w") as f:
         yaml.dump(config_content, f)
 
-    engine = Engine(str(config_file))
+    engine = Engine(str(config_file), watch_configuration_changes=False)
     assert isinstance(engine.config, Configuration)
     assert engine.config.collector.suricata.enable is True
     assert engine.config.collector.nf_stream.enable is False
@@ -52,7 +52,7 @@ def test_engine_start(mock_enrich_init, mock_file_start, mock_enrich_start, mock
     with open(config_file, "w") as f:
         yaml.dump(config_content, f)
 
-    engine = Engine(str(config_file))
+    engine = Engine(str(config_file), watch_configuration_changes=False)
     engine.start()
 
     assert mock_suricata_start.called
@@ -79,7 +79,7 @@ def test_engine_stop(mock_stop_processing, tmp_path):
     with open(config_file, "w") as f:
         yaml.dump(config_content, f)
 
-    engine = Engine(str(config_file))
+    engine = Engine(str(config_file), watch_configuration_changes=False)
     engine.stop()
     assert mock_stop_processing.called
 
@@ -94,7 +94,7 @@ def test_engine_reload(mock_setup, mock_load, mock_start, mock_stop, tmp_path):
     with open(config_file, "w") as f:
         yaml.dump(config_content, f)
 
-    engine = Engine(str(config_file))
+    engine = Engine(str(config_file), watch_configuration_changes=False)
     engine.reload()
 
     assert mock_stop.called
