@@ -1,33 +1,12 @@
-from typing import Optional, Generic, TypeVar, Iterator, Dict, Any, Tuple, List
-from collections import OrderedDict
 import threading
 import time
+from collections import OrderedDict
+from typing import Optional, Generic, TypeVar, Iterator, Dict, Any, List
+
+from mongoose.core import SingletonMeta
 
 K = TypeVar("K")
 V = TypeVar("V")
-
-
-class SingletonMeta(type):
-    """
-    Thread-safe metaclass implementing a per-class singleton.
-
-    Each class that uses this metaclass will only ever have a single
-    instance created. The first construction's args/kwargs are used to
-    initialize the singleton; later constructions return the same
-    instance and ignore new args.
-    """
-
-    _instances: Dict[type, Any] = {}
-    _lock: threading.Lock = threading.Lock()
-
-    def __call__(cls, *args: Any, **kwargs: Any) -> Any:
-        # Double-checked locking to avoid acquiring the lock every time
-        if cls not in cls._instances:
-            with cls._lock:
-                if cls not in cls._instances:
-                    instance = super().__call__(*args, **kwargs)
-                    cls._instances[cls] = instance
-        return cls._instances[cls]
 
 
 class Cache(Generic[K, V], metaclass=SingletonMeta):

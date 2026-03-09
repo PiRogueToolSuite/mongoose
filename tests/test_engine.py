@@ -13,7 +13,7 @@ def test_engine_initialization(tmp_path):
                 "suricata": {"socket_path": "/tmp/suricata.socket", "enable": True},
                 "nf_stream": {"interface": "eth0", "enable": False},
             },
-            "enrichment": {"geoip": {"remote_service_url": "http://geoip", "enable": True}},
+            "enrichment": {"geoip": {"enable": False}},
             "forwarder": {
                 "file": {"output_dir": str(tmp_path / "output"), "enable": True},
                 "webhooks": [{"url": "http://webhook", "enable": False}],
@@ -31,17 +31,16 @@ def test_engine_initialization(tmp_path):
 
 
 @patch("mongoose.collect.suricata_eve_collector.SuricataEveCollector.start")
-@patch("mongoose.enrich.Enrich.start")
+@patch("mongoose.enrich.base.Enrich.start")
 @patch("mongoose.forward.file.FileForwarder.start")
-@patch("mongoose.enrich.Enrich.__init__", return_value=None)
-def test_engine_start(mock_enrich_init, mock_file_start, mock_enrich_start, mock_suricata_start, tmp_path):
+def test_engine_start(mock_file_start, mock_enrich_start, mock_suricata_start, tmp_path):
     config_content = {
         "configuration": {
             "collector": {
                 "suricata": {"socket_path": "/tmp/suricata.socket", "enable": True},
                 "nf_stream": {"interface": "eth0", "enable": False},
             },
-            "enrichment": {"geoip": {"enable": True}},
+            "enrichment": {"geoip": {"enable": False}},
             "forwarder": {
                 "file": {"output_dir": str(tmp_path / "output"), "enable": True},
                 "webhooks": [{"url": "http://webhook", "enable": False}],

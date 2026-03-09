@@ -29,7 +29,7 @@ class DailyFileDownloadJob:
     def _parse_run_time(self, run_time_str):
         """Parse run time string to hours and minutes."""
         try:
-            hour, minute = map(int, run_time_str.split(':'))
+            hour, minute = map(int, run_time_str.split(":"))
             if not (0 <= hour <= 23 and 0 <= minute <= 59):
                 raise ValueError("Invalid time range")
             return hour, minute

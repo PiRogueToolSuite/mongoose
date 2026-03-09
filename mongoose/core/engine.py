@@ -1,14 +1,16 @@
 import logging
 import threading
-from typing import List, Optional, Type, Dict, Set, Any
+from typing import List, Optional, Type
 
 import yaml
 
 import mongoose.core.cache as cache_module
 from mongoose.collect.nfstream_collector import NFStreamCollector
 from mongoose.collect.suricata_eve_collector import SuricataEveCollector
+from mongoose.core import Singleton
 from mongoose.core.cache import SeverityCache
 from mongoose.core.processing import ProcessingQueue
+from mongoose.core.registry import JobRegistry
 from mongoose.core.sink import Sink
 from mongoose.core.watchdogs import DropInConfigurationWatcher, DropInConfigurationHandler
 from mongoose.enrich.base import Enrich
@@ -19,40 +21,6 @@ from mongoose.models.configuration import Configuration, WebhookForwarderConfigu
 from mongoose.store.sqlite import SqliteStore
 
 logger = logging.getLogger(__name__)
-
-
-class Singleton(type):
-    _instances: Dict[type, type] = {}
-
-    def __call__(cls, *args, **kwargs):
-        """Control instance creation to ensure singleton behavior.
-
-        Args:
-            cls (type): The class being instantiated
-            *args: Positional arguments for class initialization
-            **kwargs: Keyword arguments for class initialization
-
-        Returns:
-            type: The singleton instance of the class
-
-        Note:
-            If an instance already exists, ``__init__`` will still be called with
-            the provided arguments, but no new instance is created.
-        """
-        if cls not in cls._instances:
-            cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
-        return cls._instances[cls]
-
-
-class JobRegistry(metaclass=Singleton):
-    def __init__(self):
-        self.jobs: Set[Any] = set()
-
-    def register(self, job: Any):
-        self.jobs.add(job)
-
-    def clear(self):
-        self.jobs.clear()
 
 
 class Engine(metaclass=Singleton):
@@ -78,9 +46,13 @@ class Engine(metaclass=Singleton):
         self.started = False
         self.thread_id = threading.get_ident()
         self.watch_configuration_changes = watch_configuration_changes
-        self.webhook_configuration_watcher = DropInConfigurationWatcher(
-            self.config.extra_configuration_dir / "webhook.d",
-            DropInConfigurationHandler(WebhookForwarderConfiguration, self._handle_webhook_configuration_changes),
+        self.webhook_configuration_watcher = (
+            DropInConfigurationWatcher(
+                self.config.extra_configuration_dir / "webhook.d",
+                DropInConfigurationHandler(WebhookForwarderConfiguration, self._handle_webhook_configuration_changes),
+            )
+            if self.watch_configuration_changes
+            else None
         )
 
     def load_extra_config(self, name: str, config_class: Type):

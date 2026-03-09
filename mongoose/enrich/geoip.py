@@ -1,13 +1,13 @@
-import ipaddress
 import logging
+import ipaddress
 from functools import lru_cache
-from typing import Union, Any, Dict, Optional
+from typing import Union, Optional, Dict, Any
+
 import geoip2
 import geoip2.database
-
 import maxminddb
 
-from mongoose.core.engine import JobRegistry
+from mongoose.core.registry import JobRegistry
 from mongoose.models import NetworkDPI, NetworkFlow, NetworkAlert
 from mongoose.models.configuration import GeoIPConfiguration
 from mongoose.utils.exceptions import IgnoreCacheException
