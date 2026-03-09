@@ -2,18 +2,74 @@ import ipaddress
 import logging
 from functools import lru_cache
 from typing import Union, Any, Dict, Optional
+import geoip2
 import geoip2.database
 
-import geoip2
+import maxminddb
 
+from mongoose.core.engine import JobRegistry
 from mongoose.models import NetworkDPI, NetworkFlow, NetworkAlert
 from mongoose.models.configuration import GeoIPConfiguration
 from mongoose.utils.exceptions import IgnoreCacheException
+from mongoose.utils.jobs import DailyFileDownloadJob
 
 logger = logging.getLogger(__name__)
 
 
-class GeoIP:
+class IP66GeoIP:
+    database_filename = "ip66.mmdb"
+    database_url = "https://downloads.ip66.dev/db/ip66.mmdb"
+    download_job = None
+
+    def __init__(self, geoip_configuration: GeoIPConfiguration):
+        self.geoip_configuration = geoip_configuration
+        self.database_path = self.geoip_configuration.maxmind_db_path / self.database_filename
+        if not self.download_job:
+            self.download_job = DailyFileDownloadJob(url=self.database_url, local_path=self.database_path)
+            JobRegistry().register(self.download_job)
+
+    @lru_cache(maxsize=512)
+    def request_geoip(self, ip_address: str) -> Optional[Dict[Any, Any]]:
+        reader = maxminddb.open_database(str(self.database_path))
+        geoip_data = {}
+        record = reader.get(ip_address)
+        if not record:
+            raise IgnoreCacheException()  # prevents caching
+
+        geoip_data["details"] = record.get("anonymous_ip", None)
+        geoip_data["traits"] = record.get("traits", None)
+        geoip_data["asn"] = record.get("autonomous_system_number")
+        geoip_data["organization"] = record.get("autonomous_system_organization")
+        geoip_data["country"] = record.get("country", {}).get("iso_code")
+        geoip_data["country_name"] = record.get("country", {}).get("names", {}).get("en")
+        geoip_data["continent"] = record.get("continent", {}).get("code")
+        geoip_data["continent_name"] = record.get("continent", {}).get("names", {}).get("en")
+
+        if geoip_data:
+            return geoip_data
+        raise IgnoreCacheException()  # prevents caching
+
+    def enrich_network_event(self, event: Union[NetworkDPI, NetworkFlow, NetworkAlert]):
+        if not hasattr(event, "src_ip") or not hasattr(event, "dst_ip"):
+            return
+
+        src_ip = ipaddress.ip_address(event.src_ip)
+        dst_ip = ipaddress.ip_address(event.dst_ip)
+        if src_ip.is_global:
+            try:
+                event.enrichment["geoip"] = self.request_geoip(event.src_ip)
+                event.enrichment["geoip"]["ip"] = event.src_ip
+            except (Exception,):
+                pass
+        elif dst_ip.is_global:
+            try:
+                event.enrichment["geoip"] = self.request_geoip(event.dst_ip)
+                event.enrichment["geoip"]["ip"] = event.dst_ip
+            except (Exception,):
+                pass
+
+
+class MaxMindGeoIP:
     def __init__(self, geoip_configuration: GeoIPConfiguration):
         self.geoip_configuration = geoip_configuration
         self.databases = []

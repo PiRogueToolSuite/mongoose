@@ -1,13 +1,14 @@
+from .base import Enrich
 from .community_id import CommunityIDEnrichment
 from .direction import DirectionEnrichment
-from .geoip import GeoIP
+from .geoip import MaxMindGeoIP, IP66GeoIP
 from .hostname import HostnameEnrichment
-from .base import Enrich
 
 __all__ = [
     "Enrich",
     "CommunityIDEnrichment",
     "DirectionEnrichment",
-    "GeoIP",
+    "IP66GeoIP",
+    "MaxMindGeoIP",
     "HostnameEnrichment",
 ]

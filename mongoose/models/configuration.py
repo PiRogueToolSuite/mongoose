@@ -189,6 +189,9 @@ class GeoIPConfiguration(BaseModel):
     maxmind_db: List[str] = ["GeoLite2-ASN.mmdb", "GeoLite2-City.mmdb", "GeoLite2-Country.mmdb"]
     """The list of GeoIP databases to use."""
 
+    source: str = "ip66"  # maxmind or ip66
+    """The source to use, either MaxMind or IP66. Defaults to IP66."""
+
     enable: bool = Field(default=True)
     """Enable the GeoIP enrichment. Defaults to True."""
 

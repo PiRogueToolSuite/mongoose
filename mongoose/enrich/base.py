@@ -5,7 +5,7 @@ from copy import deepcopy
 from typing import Optional
 
 from mongoose.core.processing import ProcessingQueue, ProcessingTopic
-from mongoose.enrich import DirectionEnrichment, CommunityIDEnrichment, HostnameEnrichment, GeoIP
+from mongoose.enrich import *
 from mongoose.enrich.risk import FlowRiskEnrichment
 from mongoose.enrich.type import EventTypeEnrichment
 from mongoose.models import NetworkDPI, NetworkAlert, NetworkFlow
@@ -27,11 +27,15 @@ class Enrich:
             EventTypeEnrichment(),
             FlowRiskEnrichment(),
         ]
-        self.geoip_enrichment = (
-            GeoIP(enrichment_configuration.geoip)
+        geoip_source = (
+            enrichment_configuration.geoip.source or "maxmind"
             if enrichment_configuration.geoip and enrichment_configuration.geoip.enable
             else None
         )
+        if geoip_source and geoip_source.lower() == "maxmind":
+            self.geoip_enrichment = MaxMindGeoIP(enrichment_configuration.geoip)
+        else:
+            self.geoip_enrichment = IP66GeoIP(enrichment_configuration.geoip)
 
     def start(self):
         if self.thread and self.thread.is_alive():

@@ -1,6 +1,6 @@
 import logging
 import threading
-from typing import List, Optional, Type, Dict
+from typing import List, Optional, Type, Dict, Set, Any
 
 import yaml
 
@@ -44,6 +44,17 @@ class Singleton(type):
         return cls._instances[cls]
 
 
+class JobRegistry(metaclass=Singleton):
+    def __init__(self):
+        self.jobs: Set[Any] = set()
+
+    def register(self, job: Any):
+        self.jobs.add(job)
+
+    def clear(self):
+        self.jobs.clear()
+
+
 class Engine(metaclass=Singleton):
     """
     The Engine class is responsible for loading the configuration,
@@ -57,6 +68,7 @@ class Engine(metaclass=Singleton):
         self.processing_queue = ProcessingQueue()
         self.collectors: List = []
         self.forwarders: List = []
+        self.job_registry = JobRegistry()
         self.enrichment: Optional[Enrich] = None
         self.database_storage = None
         self.sink: Sink = Sink()
@@ -193,6 +205,9 @@ class Engine(metaclass=Singleton):
         if self.watch_configuration_changes:
             self.webhook_configuration_watcher.run()
 
+        for job in self.job_registry.jobs:
+            job.start()
+
         self.sink.start()
         self.database_storage.start()
 
@@ -217,6 +232,9 @@ class Engine(metaclass=Singleton):
         self.started = False
 
         self.processing_queue.stop_processing()
+
+        for job in self.job_registry.jobs:
+            job.stop()
 
         if self.watch_configuration_changes:
             self.webhook_configuration_watcher.stop()
