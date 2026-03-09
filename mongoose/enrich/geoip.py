@@ -33,7 +33,8 @@ class IP66GeoIP:
         reader = maxminddb.open_database(str(self.database_path))
         geoip_data = {}
         record = reader.get(ip_address)
-        if not record:
+
+        if not record or not record.get("autonomous_system_number", None):
             raise IgnoreCacheException()  # prevents caching
 
         geoip_data["details"] = record.get("anonymous_ip", None)
