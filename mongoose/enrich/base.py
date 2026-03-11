@@ -31,13 +31,13 @@ class Enrich:
             FlowRiskEnrichment(),
         ]
         geoip_source = (
-            enrichment_configuration.geoip.source or "maxmind"
+            enrichment_configuration.geoip.source or "ip66"
             if enrichment_configuration.geoip and enrichment_configuration.geoip.enable
             else None
         )
         if geoip_source and geoip_source.lower() == "maxmind":
             self.geoip_enrichment = MaxMindGeoIP(enrichment_configuration.geoip)
-        elif geoip_source and geoip_source.lower() == "ip66":
+        elif geoip_source:
             self.geoip_enrichment = IP66GeoIP(enrichment_configuration.geoip)
 
     def start(self):
