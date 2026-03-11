@@ -1,3 +1,8 @@
+# SPDX-FileCopyrightText: 2026 Defensive Lab Agency
+# SPDX-FileContributor: u039b <git@0x39b.fr>
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 """Run the docs example config test directly (lightweight runner).
 
 This is not a replacement for pytest in CI, but provides a direct local

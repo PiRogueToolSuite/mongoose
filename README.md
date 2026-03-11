@@ -1,3 +1,10 @@
+<!--
+SPDX-FileCopyrightText: 2026 Defensive Lab Agency
+SPDX-FileContributor: u039b <git@0x39b.fr>
+
+SPDX-License-Identifier: GPL-3.0-or-later
+-->
+
 <div align="center">
 <img width="60px" src="https://pts-project.org/android-chrome-512x512.png" alt="PTS logo">
 <h1>Mongoose</h1>

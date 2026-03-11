@@ -1,3 +1,8 @@
+# SPDX-FileCopyrightText: 2026 Defensive Lab Agency
+# SPDX-FileContributor: u039b <git@0x39b.fr>
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 """Validate the example YAML against the application's Pydantic model.
 
 This script loads ``docs/example_config_test.yaml`` and attempts to parse it

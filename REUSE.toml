@@ -1,0 +1,42 @@
+# SPDX-FileCopyrightText: 2026 Defensive Lab Agency
+# SPDX-FileContributor: u039b <git@0x39b.fr>
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+version = 1
+
+[[annotations]]
+path = "tests/data/*"
+precedence = "override"
+SPDX-FileCopyrightText = "2026 Defensive Lab Agency"
+SPDX-License-Identifier = "GPL-3.0-or-later"
+
+[[annotations]]
+path = "docs/**/*.rst"
+precedence = "override"
+SPDX-FileCopyrightText = "2026 Defensive Lab Agency"
+SPDX-License-Identifier = "GPL-3.0-or-later"
+
+[[annotations]]
+path = "docs/**/*.png"
+precedence = "override"
+SPDX-FileCopyrightText = "2026 Defensive Lab Agency"
+SPDX-License-Identifier = "GPL-3.0-or-later"
+
+[[annotations]]
+path = "debian/**/*"
+precedence = "override"
+SPDX-FileCopyrightText = "2026 Defensive Lab Agency"
+SPDX-License-Identifier = "GPL-3.0-or-later"
+
+[[annotations]]
+path = ".github/**/*"
+precedence = "override"
+SPDX-FileCopyrightText = "2026 Defensive Lab Agency"
+SPDX-License-Identifier = "GPL-3.0-or-later"
+
+[[annotations]]
+path = "uv.lock"
+precedence = "override"
+SPDX-FileCopyrightText = "2026 Defensive Lab Agency"
+SPDX-License-Identifier = "GPL-3.0-or-later"

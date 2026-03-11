@@ -1,3 +1,10 @@
+/*
+ * SPDX-FileCopyrightText: 2026 Defensive Lab Agency
+ * SPDX-FileContributor: u039b <git@0x39b.fr>
+ *
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap');
 
 kbd, pre, samp, code, .kbd, .pre, .samp, .code, .rst-content div[class^="highlight"] pre {
