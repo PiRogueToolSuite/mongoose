@@ -9,6 +9,7 @@
 
    configuration
    enrichment
+   data_models
 
 
 .. toctree::
