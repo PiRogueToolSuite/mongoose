@@ -10,6 +10,8 @@
    configuration
    enrichment
    data_models
+   correlation
+   suricata_integration
 
 
 .. toctree::

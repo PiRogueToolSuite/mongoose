@@ -8,10 +8,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 <div align="center">
 <img width="60px" src="https://pts-project.org/android-chrome-512x512.png" alt="PTS logo">
 <h1>Mongoose</h1>
-<p>
-Lightweight dead-simple Python library to collect, enrich, store and forward
-network events such as Suricata alerts and network flows
-</p>
+<p>Collect, enrich, store and forward Suricata alerts and network flows.</p>
 <p>
 <img src="https://img.shields.io/badge/License-GPL_v3-8A2BE2" alt="License: GPL v3">
 </p>
@@ -25,41 +22,54 @@ network events such as Suricata alerts and network flows
 
 ![](https://github.com/PiRogueToolSuite/mongoose/raw/main/docs/_static/diagram.png)
 
-Mongoose — a lightweight dead-simple Python library and daemon to collect, enrich, store and forward
-network events such as Suricata alerts and Deep Packet Inspection flows.
+Mongoose is a Python daemon and library for collecting, enriching, storing and
+forwarding network events from Suricata and NFStream.
 
-### Purpose
-
-Mongoose provides a modular pipeline to ingest network events and flows,
-enrich them with metadata (for example GeoIP and Community ID), persist
-short-term state in a SQLite database, and forward processed records to
-files, webhooks or other sinks. It is designed to be simple to configure,
-extend and integrate into other applications.
-
-### Overview
-**Mongoose** is a versatile Python-based framework designed for the collection,
-enrichment, and distribution of network security events and traffic flows. It acts
-as a central hub for processing data from various network monitoring tools, providing a
-modular and scalable pipeline for security analysts and researchers.
-
-At its core, Mongoose utilizes a thread-safe **pub-sub engine** that allows for
-concurrent processing of different data streams. Data is collected from sources
-like Suricata EVE logs and NFStream, published to specific topics, and then
-consumed by various modules for enrichment (e.g., GeoIP, Community ID), persistent
-storage (SQLite), or forwarding to external endpoints via webhooks or local files.
-
-The project is built with extensibility in mind, making it easy to integrate new
-data sources and processing logic to adapt to different network monitoring needs.
+It runs a thread-safe pub-sub pipeline (`ProcessingQueue`) where collectors
+publish raw events to topics and subscribers — enricher, SQLite store,
+forwarders — consume them concurrently.
 
 ### Key features
 
-- Modular collectors: Suricata EVE, nfstream, file-based replay.
-- Enrichment: GeoIP lookup, Community ID calculation and custom enrichers.
-- Pluggable forwarders: file, webhook, Discord (extensible to new sinks).
-- Lightweight SQLite storage for short-term persistence.
-- Thread-safe pub-sub engine and safe caches for concurrent ingestion.
+- **Modular collectors**: Suricata EVE (alerts and netflow via Unix socket),
+  NFStream (live packet capture from a network interface).
+- **Automatic enrichment**: traffic direction (inbound / outbound / local),
+  Community ID calculation, reverse DNS hostname lookup, event type
+  classification, and flow risk scoring via a configurable severity cache.
+- **GeoIP enrichment**: MaxMind (GeoLite2-ASN, GeoLite2-City,
+  GeoLite2-Country) and IP66 databases, with daily automatic database updates.
+- **Pluggable forwarders**: local file output, HTTP(S) webhooks (immediate,
+  bulk or periodic modes with retry logic and multiple authentication methods),
+  and Discord (rich embed formatting).
+- **Topic filtering**: forwarders can be scoped to specific topics and filtered
+  by event attributes.
+- **Drop-in webhook configuration**: new webhook forwarders can be added at
+  runtime by dropping a YAML file into a watched directory — no restart
+  required.
+- **SQLite storage**: enriched events are persisted with configurable history
+  pruning by record count or age.
+- **Sharded LRU cache**: thread-safe severity cache with optional TTL used for
+  flow risk scoring.
+- **Singleton engine**: a single `Engine` instance manages the full component
+  lifecycle (start, stop, reload).
+- **Systemd and PiRogue integration**: the CLI daemon supports `sd_notify` and
+  reads the isolated interface from `pirogue-admin-client` when available.
+
+### Pipeline topics
+
+Events flow through the following pub-sub topics:
+
+| Topic | Description |
+|---|---|
+| `network-dpi` | Raw DPI flows from NFStream |
+| `network-alert` | Raw Suricata alerts |
+| `network-flow` | Raw Suricata netflow records |
+| `enriched-network-dpi` | Enriched DPI flows |
+| `enriched-network-alert` | Enriched Suricata alerts |
+| `enriched-network-flow` | Enriched netflow records |
 
 ### Installation
+
 Install in a virtual environment and editable mode for development:
 
 ```bash
@@ -68,27 +78,95 @@ pip install -e .
 ```
 
 ### CLI usage
+
+The package installs a `mongoosed` daemon entry-point:
+
 ```bash
 # show top-level help
-mongoose --help
+mongoosed --help
 
-# run mongoose with a configuration file
-mongoose --config docs/example_config_test.yaml
+# run with a configuration file
+mongoosed --config /etc/mongoose/mongoose.yaml
+
+# override the network interface used by NFStream
+mongoosed --config mongoose.yaml --interface eth0
+
+# set logging verbosity
+mongoosed --config mongoose.yaml --logging-level DEBUG
 ```
 
 ### Python library usage
-Use Mongoose as a library when you can use in your application. The snippet
-below shows how to instanciate the engine with a config and run it.
-Replace the config path with your own file.
 
 ```python
 import time
 from mongoose.core.engine import Engine
 
-# Create an Engine from a configuration file and run a single cycle.
-configuration_file = "config.yaml"
-engine = Engine(configuration_file)
+engine = Engine("config.yaml")
 engine.start()
 time.sleep(6)
 engine.stop()
 ```
+
+### Configuration
+
+Configured via a YAML file. All keys live under a top-level `configuration` key.
+
+```yaml
+configuration:
+  collector:
+    suricata:
+      socket_path: "/run/suricata.socket"  # Suricata Unix socket
+      collect_alerts: true                 # collect Suricata alerts
+      collect_netflow: false               # collect Suricata netflow records
+      enable: true
+
+    nf_stream:
+      interface: "eth0"          # network interface for live capture
+      active_timeout: 120        # seconds before an active flow expires
+      enable: false
+
+  enrichment:
+    geoip:
+      source: "ip66"             # "ip66" (default) or "maxmind"
+      enable: true
+
+  forwarder:
+    webhooks:
+      - url: "https://hooks.example.com/ingest"
+        auth_type: "bearer"      # none | basic | bearer | header
+        auth_token: "${WEBHOOK_AUTH_TOKEN}"
+        verify_ssl: true
+        retry_count: 3
+        retry_delay: 5.0
+        timeout: 10.0
+        mode: "immediate"        # immediate | bulk | periodic
+        bulk_size: 10
+        periodic_interval: 5.0
+        periodic_rate: 10
+        topics:
+          - "enriched-network-dpi"
+          - "enriched-network-alert"
+        enable: true
+
+  database_path: "mongoose.db"
+
+  history:
+    max_duration_days: 14  # keep records for at most 14 days
+    max_records: null      # optional hard cap on row count per table
+    enable: true
+
+  cache:
+    severity:
+      max_size: 1024       # maximum entries in the severity LRU cache
+      ttl_seconds: null    # optional TTL; null means entries never expire
+      enable: true
+
+  extra_configuration_dir: "/var/lib/mongoose"
+```
+
+#### Drop-in webhook configuration
+
+Place a YAML file matching the `WebhookForwarderConfiguration` schema inside
+`<extra_configuration_dir>/webhook.d/`. The engine watches this directory and
+activates new forwarders when a file is created, and deactivates them when it
+is deleted.

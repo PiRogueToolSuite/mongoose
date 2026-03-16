@@ -12,7 +12,6 @@ collector:
   nf_stream:
     interface: eth0
     active_timeout: 120
-    max_nflows: 0
     enable: true
 enrichment:
   geoip:
@@ -37,7 +36,3 @@ forwarder:
       enable: true
 database_path: /var/lib/mongoose/mongoose.db
 extra_configuration_dir: /var/lib/mongoose/
-cache:
-  severity:
-    enable: true
-    max_size: 1024

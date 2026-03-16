@@ -4,6 +4,7 @@ Configuration
 =============
 
 .. _configuration-overview:
+
 Overview
 --------
 
@@ -62,6 +63,7 @@ Example::
 
 
 .. _configuration-file-layout:
+
 File layout
 ----------------------------------------
 
@@ -76,6 +78,7 @@ Some components (notably forwarders that implement a plugin-style loader) can be
 drop-in directories.
 
 .. _configuration-core-model:
+
 Top-level settings
 ------------------------------
 
@@ -91,6 +94,7 @@ The top-level configuration settings are:
 
 
 .. _configuration-collector:
+
 Collectors
 ----------
 
@@ -124,6 +128,7 @@ collector.nf_stream
   - ``enable``: Toggle NFStream collector on or off.
 
 .. _configuration-enrichment:
+
 Enrichment
 ----------
 
@@ -131,7 +136,7 @@ Enrichment runs between collection and forwarding to add derived fields and
 context (for example, GeoIP lookups).
 
 GeoIP
-~~~~~
+ˆˆˆˆˆ
 
 Configuration of the GeoIP enricher::
 
@@ -152,6 +157,7 @@ Supported settings
 - ``enable``: Toggle the GeoIP enricher.
 
 .. _configuration-forwarders:
+
 Forwarders
 ----------
 
@@ -290,6 +296,7 @@ Supported settings
 - ``allowed_mentions``: Control which mentions are allowed; default is ``{"parse": []}`` to avoid mass pings.
 
 .. _configuration-store:
+
 Storage
 ----------------
 
