@@ -1,3 +1,9 @@
+pirogue-mongoose (1.0.1) bookworm; urgency=medium
+
+  * First stable release
+
+ -- U+039b <hello@pts-project.org>  Tue, 24 Mar 2026 15:40:00 +0200
+
 pirogue-mongoose (1.0.0) bookworm; urgency=medium
 
   * Initial release
