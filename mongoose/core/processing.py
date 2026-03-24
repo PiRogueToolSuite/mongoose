@@ -44,6 +44,8 @@ class ProcessingQueue:
         a `TopicNotFoundException`.
     """
 
+    DEFAULT_QUEUE_SIZE = 250
+
     subscribers: Dict[str, Dict[ProcessingTopic, Queue]] = defaultdict(dict)
     """Mapping of subscriber IDs to their topic-specific queues."""
 
@@ -81,7 +83,7 @@ class ProcessingQueue:
                 logger.error(f"Failed to publish data to {topic}: {e}")
                 raise e
 
-    def subscribe(self, topic: ProcessingTopic | List[ProcessingTopic], subscriber_id: str, queue_size=100) -> Queue:
+    def subscribe(self, topic: ProcessingTopic | List[ProcessingTopic], subscriber_id: str, queue_size=DEFAULT_QUEUE_SIZE) -> Queue:
         """Subscribe to one or more topics and receive a dedicated queue for receiving data.
 
         This method registers a subscriber for the specified topics. If it's the first
