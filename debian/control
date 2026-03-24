@@ -18,7 +18,6 @@ Architecture: all
 Depends:
  suricata,
  suricata-update,
- geoipupdate,
  python3-communityid,
  python3-geoip2,
  python3-nfstream,
