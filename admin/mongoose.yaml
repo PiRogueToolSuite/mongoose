@@ -19,11 +19,12 @@ configuration:
 
     nf_stream:
       interface: "@ISOLATED_INTERFACE@"
-      active_timeout: 30  # 30 seconds
+      active_timeout: 60  # 60 seconds
       enable: true 
 
   enrichment:
     geoip:
+      source: "ip66"
       enable: true
 
   forwarder:
