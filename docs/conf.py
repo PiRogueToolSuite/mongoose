@@ -40,7 +40,6 @@ extensions = [
     "sphinx.ext.autosummary",
     "sphinx.ext.napoleon",
     "sphinx.ext.githubpages",
-    "sphinxcontrib.mermaid",
     "sphinxcontrib.datatemplates",
     "sphinx_sqlalchemy",
 ]
@@ -76,7 +75,7 @@ napoleon_use_admonition_for_references = True
 napoleon_preprocess_types = True
 napoleon_use_param = True
 
-mermaid_params = ["--theme", "forest", "--width", "600", "--backgroundColor", "transparent"]
+mermaid_params = ["--theme", "neutral", "--layout", "elk", "--width", "600", "--backgroundColor", "transparent"]
 
 exclude_patterns = []
 

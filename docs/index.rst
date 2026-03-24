@@ -8,10 +8,11 @@
    :caption: Guides
 
    configuration
-   enrichment
-   data_models
-   correlation
    suricata_integration
+   enrichment
+   correlation
+   data_models
+   data_queries
 
 
 .. toctree::

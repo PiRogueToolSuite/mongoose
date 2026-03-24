@@ -179,6 +179,12 @@ The diagram below shows the full data flow:
 
 .. mermaid::
 
+   ---
+   config:
+     theme: neutral
+     layout: elk
+     look: neo
+   ---
    flowchart TD
        suricata["Suricata (EVE socket)"]
        collector["SuricataEveCollector"]
