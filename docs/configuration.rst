@@ -248,16 +248,14 @@ lexicographic order and merged into the effective configuration.
 Example drop-in file::
 
     # /var/lib/mongoose/webhook.d/10-internal.yaml
-    - url: https://internal.example.local/hook
-      headers:
-        X-Internal-Token: s3cr3t
-      auth_type: header
-      auth_token: s3cr3t
-      auth_header_name: X-Internal-Token
-      retry_count: 5
-      retry_delay: 2.0
-      timeout: 8.0
-      enable: true
+    url: https://internal.example.local/hook
+    auth_type: header
+    auth_token: s3cr3t
+    auth_header_name: X-Internal-Token
+    retry_count: 5
+    retry_delay: 2.0
+    timeout: 8.0
+    enable: true
 
 
 **Filename conventions**
