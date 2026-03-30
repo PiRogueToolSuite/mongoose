@@ -1,6 +1,7 @@
 [Unit]
 Description=Collect, enrich and store network events
 Wants=networking.service
+After=networking.service
 
 [Service]
 ExecStart=/usr/bin/mongoosed -c /etc/mongoose/mongoose.yaml
