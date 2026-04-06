@@ -1,3 +1,9 @@
+pirogue-mongoose (1.0.2) bookworm; urgency=medium
+
+  * Change default GeoIP configuration
+
+ -- U+039b <hello@pts-project.org>  Tue, 31 Mar 2026 15:01:49 +0200
+
 pirogue-mongoose (1.0.1) bookworm; urgency=medium
 
   * First stable release
