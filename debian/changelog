@@ -1,3 +1,10 @@
+pirogue-mongoose (1.0.3) bookworm; urgency=medium
+
+  * Fix missing 'pirogue-admin redeploy' on first package installation
+  * Minor build dependencies fixes
+
+ -- Christophe Andral <christophe@andral.fr>  Wed, 08 Apr 2026 15:27:09 +0200
+
 pirogue-mongoose (1.0.2) bookworm; urgency=medium
 
   * Change default GeoIP configuration

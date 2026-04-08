@@ -22,6 +22,6 @@ if [ "$1" = configure ] && [ -z "$2" ]; then
 fi
 
 # Poke pirogue-admin, only when upgrading:
-if [ "$1" = "configure" ] && [ -n "$2" ]; then
+if [ "$1" = "configure" ]; then
   pirogue-admin --redeploy --commit
 fi

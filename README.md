@@ -170,3 +170,13 @@ Place a YAML file matching the `WebhookForwarderConfiguration` schema inside
 `<extra_configuration_dir>/webhook.d/`. The engine watches this directory and
 activates new forwarders when a file is created, and deactivates them when it
 is deleted.
+
+### Development
+
+This project uses [UV](https://docs.astral.sh/uv/) and [Hatching](https://github.com/pypa/hatch)
+has build tools. 
+
+Once checked out, set up the project development environment with the following command:
+```
+uv sync --all-groups
+```
