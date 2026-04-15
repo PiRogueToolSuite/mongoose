@@ -180,3 +180,21 @@ Once checked out, set up the project development environment with the following 
 ```
 uv sync --all-groups
 ```
+
+#### Pre-commit hooks
+Install the pre-commit hooks:
+```
+uvx pre-commit install
+```
+
+These hooks can be run at any time with tox:
+```
+tox run -e fix
+```
+
+#### Create a new release
+Hatchling uses the Debian changelog to define the Python package version and authors:
+```
+dch -i  # Increment the Debian package version
+git tag -a "v1.x.x" -m "message"  # New tag to publish the Python package on PyPi
+```
