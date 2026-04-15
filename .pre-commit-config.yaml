@@ -7,14 +7,21 @@ repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0
     hooks:
+      - id: check-toml
       - id: end-of-file-fixer
         types: [python]
       - id: trailing-whitespace
         types: [python]
-#  - repo: https://github.com/tox-dev/pyproject-fmt
-#    rev: "v2.16.1"
-#    hooks:
-#      - id: pyproject-fmt
+      - id: check-merge-conflict
+      - id: detect-private-key
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.30.1
+    hooks:
+      - id: gitleaks
+  - repo: https://github.com/astral-sh/uv-pre-commit
+    rev: 0.9.18
+    hooks:
+      - id: uv-lock
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: "v0.15.2"
     hooks:

@@ -1,12 +1,16 @@
-import subprocess
-from pathlib import Path
+# SPDX-FileCopyrightText: 2026 Defensive Lab Agency
+# SPDX-FileContributor: u039b <git@0x39b.fr>
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
 
-from hatchling.metadata.plugin.interface import MetadataHookInterface
 import re
-
+from pathlib import Path
 from typing import List, Dict, Optional
 
-def get_authors(changelog_path: str) -> List[Dict[str, str]]:
+from hatchling.metadata.plugin.interface import MetadataHookInterface
+
+
+def get_authors(changelog_path: Path) -> List[Dict[str, str]]:
     """
     Extract all unique authors from a Debian changelog file.
 
@@ -20,11 +24,11 @@ def get_authors(changelog_path: str) -> List[Dict[str, str]]:
     Returns:
         List of dicts, e.g. [{"name": "John Doe", "email": "john@example.com"}]
     """
-    author_pattern = re.compile(r'^ -- (.*?) <([^>]+)>')
+    author_pattern = re.compile(r"^ -- (.*?) <([^>]+)>")
     authors = []
     seen = set()
 
-    with open(changelog_path, 'r', encoding='utf-8') as f:
+    with changelog_path.open(mode="r", encoding="utf-8") as f:
         for line in f:
             match = author_pattern.match(line)
             if match:
@@ -37,7 +41,8 @@ def get_authors(changelog_path: str) -> List[Dict[str, str]]:
 
     return authors
 
-def get_latest_version(changelog_path: str) -> Optional[str]:
+
+def get_latest_version(changelog_path: Path) -> Optional[str]:
     """
     Extract the latest version from a Debian changelog file.
 
@@ -47,30 +52,20 @@ def get_latest_version(changelog_path: str) -> Optional[str]:
     Returns:
         Version string (e.g., "1.0.2") or None if not found.
     """
-    version_pattern = re.compile(r'^[^\s]+\s+\(([^)]+)\)')
-    
-    with open(changelog_path, 'r', encoding='utf-8') as f:
+    version_pattern = re.compile(r"^[^\s]+\s+\(([^)]+)\)")
+
+    with changelog_path.open(mode="r", encoding="utf-8") as f:
         for line in f:
             match = version_pattern.match(line)
             if match:
                 return match.group(1)
     return None
 
-def get_latest_xxversion(changelog_path):
-    version_pattern = re.compile(r'^[^\s]+\s+\(([^)]+)\)')
-
-    with open(changelog_path, 'r', encoding='utf-8') as f:
-        for line in f:
-            match = version_pattern.match(line)
-            if match:
-                return match.group(1)   # captured version
-    return None
-
 
 class DebianChangelogHook(MetadataHookInterface):
     def update(self, metadata):
-        # Only run for the 'metadata' phase
         changelog_path = Path(self.root) / "debian" / "changelog"
+
         if not changelog_path.exists():
             return
 
@@ -81,15 +76,6 @@ class DebianChangelogHook(MetadataHookInterface):
             raise Exception("Not version found")
 
         if authors:
-            metadata["authors"] = authors 
+            metadata["authors"] = authors
 
         metadata["version"] = version
-        print(metadata)
-
-
-#class JSONMetaDataHook(MetadataHookInterface):
-#    def update(self, meta data):
-#        version = subprocess.check_output(["dpkg-parsechangelog", "--show-field", "Version"])
-#        metadata["version"] = version
-#        print(metadata)
-
