@@ -32,13 +32,6 @@ except (Exception,):
 
 # PiRogue
 pirogue_isolated_iface: Optional[str] = None
-try:
-    from pirogue_admin_client import PirogueAdminClientAdapter
-
-    admin_client = PirogueAdminClientAdapter()
-    pirogue_isolated_iface = admin_client.get_configuration().get("ISOLATED_INTERFACE")
-except (Exception,):
-    pass
 
 
 def parse_args(argv: Optional[list[str]] = None) -> argparse.Namespace:
