@@ -12,3 +12,6 @@ override_dh_clean:
 	dh_clean
 	rm -f ./*mongoose.db
 	rm -rf mongoose.egg-info/
+
+override_dh_auto_test:
+	@echo "Running tests would require setting up many PiRogue packages."
