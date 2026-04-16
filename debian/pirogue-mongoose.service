@@ -2,6 +2,7 @@
 Description=Collect, enrich and store network events
 Wants=networking.service
 After=networking.service
+ConditionPathExists=/etc/mongoose/mongoose.yaml
 
 [Service]
 ExecStart=/usr/bin/mongoosed -c /etc/mongoose/mongoose.yaml
