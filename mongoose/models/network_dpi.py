@@ -26,7 +26,7 @@ class NetworkDPI(BaseModel):
     bidirectional_duration_ms: int = 0
     bidirectional_bytes: int = 0
     bidirectional_packets: int = 0
-    protocol: str = "unknown"
+    protocol: str | int = "unknown"
     protocol_number: int = 0
     ip_version: int
     src_ip: str
