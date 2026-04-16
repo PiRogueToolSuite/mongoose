@@ -1,3 +1,9 @@
+pirogue-mongoose (1.0.4) bookworm; urgency=medium
+
+  * Remove unused PirogueAdminClientAdapter
+
+ -- U+039b <hello@pts-project.org>  Thu, 16 Apr 2026 17:20:35 +0200
+
 pirogue-mongoose (1.0.3) bookworm; urgency=medium
 
   * Fix missing 'pirogue-admin redeploy' on first package installation
