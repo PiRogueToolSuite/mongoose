@@ -1,3 +1,10 @@
+pirogue-mongoose (1.0.5) bookworm; urgency=medium
+
+  * Relax the dependency on python3-sqlalchemy, making the binary package
+    installable on Debian 13 as well.
+
+ -- Cyril Brulebois <cyril@debamax.com>  Thu, 16 Apr 2026 18:17:32 +0200
+
 pirogue-mongoose (1.0.4) bookworm; urgency=medium
 
   * Remove unused PirogueAdminClientAdapter
