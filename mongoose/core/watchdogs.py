@@ -17,6 +17,7 @@ logger = logging.getLogger(__name__)
 class DropInConfigurationWatcher:
     def __init__(self, configuration_dir: Path, event_handler: FileSystemEventHandler):
         self.configuration_dir = configuration_dir
+        self.configuration_dir.mkdir(parents=True, exist_ok=True)
         self.event_handler = event_handler
         self.observer = Observer()
 
