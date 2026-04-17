@@ -1,3 +1,10 @@
+pirogue-mongoose (1.0.6) bookworm; urgency=medium
+
+  * Make sure the extra configuration directory is created before starting 
+    the configuration watchdog
+
+ -- U+039b <hello@pts-project.org>  Fri, 17 Apr 2026 13:46:43 +0200
+
 pirogue-mongoose (1.0.5) bookworm; urgency=medium
 
   * Relax the dependency on python3-sqlalchemy, making the binary package
